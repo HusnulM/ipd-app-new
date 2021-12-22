@@ -1,7 +1,7 @@
 <section class="content">
     <div class="container-fluid">
         <div class="row clearfix">
-        <form action="<?= BASEURL; ?>/requestslip/saveprice" method="POST" enctype="multipart/form-data">
+        <form action="<?= BASEURL; ?>/approveslip/approveslip" method="POST" enctype="multipart/form-data">
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <div class="card">
                     <div class="header">
@@ -12,40 +12,57 @@
                     <div class="body">
                         <div class="row clearfix">
                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        <label for="note">Note</label>
-                                        <input type="text" name="reqnote" id="note" class="form-control" placeholder="Note" value="<?= $data['reqheader']['request_note']; ?>" readonly>
-                                        <input type="hidden" name="requestnum" value="<?= $data['reqheader']['requestnum']; ?>">
+                                <div class="row">
+                                    <div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <label for="note">Note</label>
+                                                <input type="text" name="reqnote" id="note" class="form-control" placeholder="Note" value="<?= $data['reqheader']['request_note']; ?>" readonly>
+                                                <input type="hidden" name="requestnum" value="<?= $data['reqheader']['requestnum']; ?>">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <?php if(isset($data['reqheader']['efile'])): ?>
+                                                    <br>
+                                                    <a href="<?= BASEURL; ?>/efile/request-slip/<?= $data['reqheader']['efile']; ?>" target="_blank" class="btn btn-primary">VIEW Attachment</a>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>    
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        <label for="regdate">Request Date</label>
-                                        <input type="date" name="reqdate" id="reqdate" class="datepicker form-control" value="<?= $data['reqheader']['request_date']; ?>" readonly>
-                                    </div>
-                                </div>    
-                            </div>
 
-                            <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        <label for="requestor">Requestor</label>
-                                        <input type="text" class="form-control" name="requestor" id="requestor" value="<?= $data['reqheader']['request_by']; ?>" readonly>
+                                <div class="row">
+                                    <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <label for="regdate">Request Date</label>
+                                                <input type="date" name="reqdate" id="reqdate" class="datepicker form-control" value="<?= $data['reqheader']['request_date']; ?>" readonly>
+                                            </div>
+                                        </div>    
                                     </div>
-                                </div>    
-                            </div>
 
-                            <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        <label for="department">Department</label>
-                                        <input type="text" class="form-control" name="department" id="department" value="<?= $data['reqheader']['department']; ?>" readonly>
+                                    <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <label for="requestor">Requestor</label>
+                                                <input type="text" class="form-control" name="requestor" id="requestor" value="<?= $data['reqheader']['request_by']; ?>" readonly>
+                                            </div>
+                                        </div>    
                                     </div>
-                                </div>    
+
+                                    <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <label for="department">Department</label>
+                                                <input type="text" class="form-control" name="department" id="department" value="<?= $data['reqheader']['department']; ?>" readonly>
+                                            </div>
+                                        </div>    
+                                    </div>
+                                </div>
                             </div>
                         </div>                            
                     </div>

@@ -61,7 +61,7 @@ class Requestslip extends Controller {
     }
 
     public function requestdetail($requestnum){
-        $check = $this->model('Home_model')->checkUsermenu('requestslip/requestlist','Create');
+        $check = $this->model('Home_model')->checkUsermenu('requestslip','Read');
         if ($check){
             $data['title'] = 'Request Slip Detail';
             $data['menu']  = 'Request Slip Detail';     

@@ -16,7 +16,7 @@ class Requestslip_model{
     }
 
     public function getRequestForPO(){
-      $this->db->query("SELECT a.*, b.department FROM t_request_slip01 as a left join t_department as b on a.deptid = b.id WHERE a.request_status = '2'");
+      $this->db->query("SELECT a.*, b.department FROM t_request_slip01 as a left join t_department as b on a.deptid = b.id WHERE a.final_approve = 'Y'");
 		  return $this->db->resultSet();
     }
 
