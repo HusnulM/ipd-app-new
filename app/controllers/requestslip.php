@@ -63,14 +63,14 @@ class Requestslip extends Controller {
     public function requestdetail($requestnum){
         $check = $this->model('Home_model')->checkUsermenu('requestslip/requestlist','Create');
         if ($check){
-            $data['title'] = 'Input Request Slip Price';
-            $data['menu']  = 'Input Request Slip Price';     
+            $data['title'] = 'Request Slip Detail';
+            $data['menu']  = 'Request Slip Detail';     
 
             $data['reqheader']   = $this->model('Requestslip_model')->getRequestHeader($requestnum);
 			$data['reqdetails']  = $this->model('Requestslip_model')->getRequestDetail($requestnum);
 
             $this->view('templates/header_a', $data);
-            $this->view('requestslip/inputprice', $data);
+            $this->view('requestslip/detail', $data);
             $this->view('templates/footer_a');
         }else{
             $this->view('templates/401');
