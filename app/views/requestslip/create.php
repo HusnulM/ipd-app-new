@@ -24,7 +24,7 @@
                                     <div class="form-group">
                                         <div class="form-line">
                                             <label for="attachment">Attachment</label>
-                                            <input type="file" name="attachment" id="attachment" class="form-control">
+                                            <input type="file" name="attachment[]" id="attachment" class="form-control" multiple>
                                         </div>
                                     </div>    
                                 </div>
@@ -97,7 +97,8 @@
                                         <thead>
                                             <tr>
                                                 <th>No</th>
-                                                <th>Part Number</th>
+                                                <th>Item</th>
+                                                <th>Description</th>
                                                 <th>Quantity</th>
                                                 <th>Unit</th>
                                                 <!-- <th>Price</th> -->
@@ -329,12 +330,15 @@
                                     `+ count +`
                                     <input type="hidden" name="itm_no[]" value="`+ count +`" />
                                 </td>
-                                <td style="width:300px;"> 
-                                    <a href="#" data-imagepath="<?= BASEURL; ?>/images/material-images/`+selected_data.image+`" data-partcode="`+selected_data.material+`" class="img-preview">`+ selected_data.material +` - `+ selected_data.matdesc +`</a>
+                                <td> 
+                                    <a href="#" data-imagepath="<?= BASEURL; ?>/images/material-images/`+selected_data.image+`" data-partcode="`+selected_data.material+`" class="img-preview">`+ selected_data.material +`</a>
 
                                     <input type="hidden" name="itm_material[]" counter="`+count+`" id="material`+count+`" class="form-control materialCode" style="width:150px;" required="true" value="`+ selected_data.material +`" readonly/>
 
                                     <input type="hidden" name="itm_matdesc[]" counter="`+count+`" id="matdesc`+count+`" class="form-control" style="width:300px;" value="`+ selected_data.matdesc +`" readonly/>
+                                </td>
+                                <td>
+                                `+ selected_data.matdesc +`
                                 </td>
                                 <td> 
                                     <input type="text" name="itm_qty[]" counter="`+count+`" id="poqty`+count+`"  class="form-control inputNumber" style=" text-align:right;" required="true" autocomplete="off"/>

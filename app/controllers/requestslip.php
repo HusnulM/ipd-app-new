@@ -68,6 +68,7 @@ class Requestslip extends Controller {
 
             $data['reqheader']   = $this->model('Requestslip_model')->getRequestHeader($requestnum);
 			$data['reqdetails']  = $this->model('Requestslip_model')->getRequestDetail($requestnum);
+            $data['attachments'] = $this->model('Requestslip_model')->getAttachment($requestnum);
 
             $this->view('templates/header_a', $data);
             $this->view('requestslip/detail', $data);
@@ -95,6 +96,16 @@ class Requestslip extends Controller {
 
     public function getmateriallist(){
         $data['data'] = $this->model('Material_model')->getListBarang();
+		echo json_encode($data);
+    }
+
+    public function getapprovedslip(){
+        $data['data'] = $this->model('Requestslip_model')->getRequestForPO();
+		echo json_encode($data);
+    }
+
+    public function getapprovedslipitem($requestnum){
+        $data = $this->model('Requestslip_model')->getRequestItemForPO($requestnum);
 		echo json_encode($data);
     }
 

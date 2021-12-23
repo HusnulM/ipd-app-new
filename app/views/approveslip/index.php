@@ -12,9 +12,6 @@
                         <h2>
                             <?= $data['menu']; ?>
                         </h2>
-                        <ul class="header-dropdown m-r--5">                                
-							<a href="<?= BASEURL; ?>/requestslip/create" class="btn btn-success waves-effect pull-right">Create Request Slip</a>
-						</ul>
                     </div>
                     <div class="body">
                         <div class="table-responsive">

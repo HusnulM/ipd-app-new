@@ -20,6 +20,11 @@ class Requestslip_model{
 		  return $this->db->resultSet();
     }
 
+    public function getRequestItemForPO($reqnum){
+      $this->db->query("SELECT a.*, b.matdesc FROM t_request_slip02 as a left join t_material as b on a.material = b.material WHERE a.po_created = 'N' and a.requestnum='$reqnum'");
+		  return $this->db->resultSet();
+    }
+
     public function getRequestHeader($reqnum){
       $this->db->query("SELECT a.*, b.department FROM t_request_slip01 as a left join t_department as b on a.deptid = b.id WHERE a.requestnum='$reqnum'");
 		  return $this->db->single();
@@ -30,18 +35,17 @@ class Requestslip_model{
 		  return $this->db->resultSet();
     }
 
+    public function getAttachment($reqnum){
+      $this->db->query("SELECT * FROM t_request_slip03 WHERE requestnum='$reqnum'");
+		  return $this->db->resultSet();
+    }
+
     public function save($data, $reqnum){
-      $filename      = $_FILES['attachment']['name'];
-        // $filename      = $filename;
-      $filename      = $reqnum."-".$filename;
-      $location      = "./efile/request-slip/". $filename;
-      $temp          = $_FILES['attachment']['tmp_name'];
-      $fileType      = pathinfo($location,PATHINFO_EXTENSION);
-      $acak          = rand(000000,999999);	
+      
 
       // Header Data
-      $query = "INSERT INTO t_request_slip01 (requestnum,request_date,request_by,request_note,request_status,deptid,efile,createdon,createdby) 
-                      VALUES(:requestnum,:request_date,:request_by,:request_note,:request_status,:deptid,:efile,:createdon,:createdby)";
+      $query = "INSERT INTO t_request_slip01 (requestnum,request_date,request_by,request_note,request_status,deptid,createdon,createdby) 
+                      VALUES(:requestnum,:request_date,:request_by,:request_note,:request_status,:deptid,:createdon,:createdby)";
         $this->db->query($query);
         
         $this->db->bind('requestnum',     $reqnum);
@@ -50,7 +54,7 @@ class Requestslip_model{
         $this->db->bind('request_note',   $data['reqnote']);
         $this->db->bind('request_status', '1');
         $this->db->bind('deptid',         $data['department']);
-        $this->db->bind('efile',          $filename);
+        // $this->db->bind('efile',          $filename);
         $this->db->bind('createdon',      date('Y-m-d'));
         $this->db->bind('createdby',      $_SESSION['usr']['user']);
         $this->db->execute();
@@ -82,10 +86,29 @@ class Requestslip_model{
           $this->db->bind('createdby',    $_SESSION['usr']['user']);
           $this->db->execute();
         }
+      
+      $query3 = "INSERT INTO t_request_slip03(requestnum,efile)
+        VALUES(:requestnum,:efile)";
+      $this->db->query($query3);
 
-        if(isset($_FILES['attachment']['name'])){
-          move_uploaded_file($temp, $location);
-        }
+      $filename      = $_FILES['attachment']['name'];
+      for($i = 0; $i < sizeof($filename); $i++){
+        
+        $namafile      = $reqnum."-".$filename[$i];
+        $location      = "./efile/request-slip/". $namafile;
+        $temp          = $_FILES['attachment']['tmp_name'][$i];
+        move_uploaded_file($temp, $location);
+
+        $this->db->bind('requestnum',    $reqnum);
+        $this->db->bind('efile',         $namafile);
+        $this->db->execute();
+      }
+      // $fileType      = pathinfo($location,PATHINFO_EXTENSION);
+      // $acak          = rand(000000,999999);	
+
+      //   if(isset($_FILES['attachment']['name'])){
+      //     move_uploaded_file($temp, $location);
+      //   }
 
       return $this->db->rowCount();
     }

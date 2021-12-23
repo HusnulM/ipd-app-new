@@ -32,6 +32,7 @@ class Approveslip extends Controller {
 
             $data['reqheader']   = $this->model('Approveslip_model')->getRequestHeader($requestnum);
 			$data['reqdetails']  = $this->model('Approveslip_model')->getRequestDetail($requestnum);
+            $data['attachments'] = $this->model('Requestslip_model')->getAttachment($requestnum);
 
             $this->view('templates/header_a', $data);
             $this->view('approveslip/detail', $data);

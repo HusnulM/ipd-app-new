@@ -26,10 +26,8 @@
                                     <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12">
                                         <div class="form-group">
                                             <div class="form-line">
-                                                <?php if(isset($data['reqheader']['efile'])): ?>
-                                                    <br>
-                                                    <a href="<?= BASEURL; ?>/efile/request-slip/<?= $data['reqheader']['efile']; ?>" target="_blank" class="btn btn-primary">VIEW Attachment</a>
-                                                <?php endif; ?>
+                                                <br>
+                                                <button type="button" class="btn btn-primary" id="btn-view-attachment">VIEW Attachment</button>
                                             </div>
                                         </div>    
                                     </div>
@@ -81,7 +79,8 @@
                                     <thead>
                                         <tr>
                                             <th>No</th>
-                                            <th>Part Number</th>
+                                            <th>Item</th>
+                                            <th>Description</th>
                                             <th>Quantity</th>
                                             <th>Unit</th>
                                             <!-- <th>Price</th> -->
@@ -98,9 +97,12 @@
                                                     <input type="hidden" name="itm_no[]" value="<?= $row['request_item']; ?>" />
                                                 </td>
                                                 <td style="width:300px;"> 
-                                                    <a href="#" data-imagepath="<?= BASEURL; ?>/images/material-images/<?= $row['image'] ?>" data-partcode="<?= $row['material'] ?>`" class="img-preview"><?= $row['material'] ?> - <?= $row['matdesc'] ?></a>
+                                                    <a href="#" data-imagepath="<?= BASEURL; ?>/images/material-images/<?= $row['image'] ?>" data-partcode="<?= $row['material'] ?>`" class="img-preview"><?= $row['material'] ?></a>
 
                                                     <input type="hidden" name="itm_material[]"class="form-control materialCode" required="true" value="<?= $row['material'] ?>" readonly/>
+                                                </td>
+                                                <td>
+                                                    <?= $row['matdesc'] ?>
                                                 </td>
                                                 <td style="text-align:right;"> 
                                                     <?php if (strpos($row['quantity'], '.000') !== false) {
@@ -158,6 +160,41 @@
                                 </tr>
                             </thead>
                             <tbody id="tbl-err-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="attachmentModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="attachmentModalText">Attachment List</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-responsive" id="tbl-err-msg" style="width:100%;">
+                            <thead>
+                                <th>No</th>
+                                <th>Attachment</th>
+                            </thead>
+                            <tbody>
+                                <?php $icount = 0; ?>
+                                <?php foreach ($data['attachments'] as $row) :?>
+                                    <?php $icount += 1; ?>
+                                    <tr>
+                                        <td><?= $icount; ?></td>
+                                        <td>
+                                            <a href="<?= BASEURL; ?>/efile/request-slip/<?= $row['efile']; ?>" target="_blank"><?= $row['efile']; ?></a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
@@ -235,6 +272,10 @@
                     return el.material === material;
                 }); 
             }
+
+            $('#btn-view-attachment').on('click', function(){
+                $('#attachmentModal').modal('show');
+            });
 
             function formatNumber(num) {
                 return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
