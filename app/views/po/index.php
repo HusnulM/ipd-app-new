@@ -27,11 +27,10 @@
                                     <thead>
                                         <tr>
                                             <th>No</th>
-                                            <th>No. PO</th>
-                                            <th>Type PO</th>
-                                            <th>Tanggal Order</th>
-                                            <th>Vendor</th>
-                                            <th>Keterangan</th>
+                                            <th>PO Number</th>
+                                            <th>PO Date</th>
+                                            <th>Supplier</th>
+                                            <th>Note</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
@@ -43,15 +42,8 @@
                                             <tr>
                                                 <td><?= $no; ?></td>
                                                 <td><?= $podata['ponum']; ?></td>
-                                                <td>
-                                                    <?php if($podata['potype'] === "PO01") : ?>
-                                                        PO Stock
-                                                    <?php else: ?>
-                                                        PO Lokal
-                                                    <?php endif; ?>
-                                                </td>
                                                 <td><?= $podata['podat']; ?></td>
-                                                <td><?= $podata['namavendor']; ?></td>
+                                                <td><?= $podata['supplier_name']; ?></td>
                                                 <td><?= $podata['note']; ?></td>
                                                 <td>Open</td>
                                                 <td>

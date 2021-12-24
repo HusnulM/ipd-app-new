@@ -61,18 +61,12 @@ class Po extends Controller{
         if ($check){
 			$data['title']    = 'Detail Purchase Order';
 			$data['menu']     = 'Detail Purchase Order';
-			$data['menu-dsc'] = '';
-			
-			// Wajib di semua route ke view--------------------------------------------
-            $data['setting']  = $this->model('Setting_model')->getgensetting();    //--
-            $data['appmenu']  = $this->model('Home_model')->getUsermenu();         //--
-			//-------------------------------------------------------------------------   
 
 			$data['pohead']   = $this->model('Po_model')->getPOHeader($ponum);
-			$data['poamount'] = $this->model('Approvepo_model')->GetTotalPOAmount($ponum);
-			$data['vendor']   = $this->model('Vendor_model')->getVendorByKode($data['pohead']['vendor']);
-			$data['whs']      = $this->model('Warehouse_model')->getWarehouseByAuth();  
-			$data['_whs']     = $this->model('Warehouse_model')->getById($data['pohead']['warehouse']);
+			// $data['poamount'] = $this->model('Approvepo_model')->GetTotalPOAmount($ponum);
+			$data['vendor']   = $this->model('Supplier_model')->getSupplierByID($data['pohead']['vendor']);
+			// $data['whs']      = $this->model('Warehouse_model')->getWarehouseByAuth();  
+			// $data['_whs']     = $this->model('Warehouse_model')->getById($data['pohead']['warehouse']);
 	
 			$this->view('templates/header_a', $data);
 			$this->view('po/detail', $data);
@@ -115,37 +109,41 @@ class Po extends Controller{
 	}
 
 	public function savepo(){
-		echo json_encode($_POST);
-		// $nextNumb = $this->model('Po_model')->getNextPONumber('PO');
+		// echo json_encode($_POST);
+		if(isset($_POST['ponum'])){
+			$nextNumb['nextnumb'] = $_POST['ponum'];
+		}else{
+			$nextNumb = $this->model('Po_model')->getNextPONumber('PO');
+		}
 		// $ponum = $this->model('Po_model')->generatenopo($nextNumb['nextnumb']);
-		// if( $this->model('Po_model')->createpo($_POST, $nextNumb['nextnumb']) > 0 ) {
-		// 	// $result = ["msg"=>"sukses", $nextNumb];
-		// 	// echo json_encode($nextNumb['nextnumb']);
+		if( $this->model('Po_model')->createpo($_POST, $nextNumb['nextnumb']) > 0 ) {
+			// $result = ["msg"=>"sukses", $nextNumb];
+			// echo json_encode($nextNumb['nextnumb']);
 			
-		// 	// Flasher::setMessage('Purchase Order ', $nextNumb['nextnumb'] . ' created!', 'success');
-		// 	// $result = ["msg"=>"success", "docnum"=>$nextNumb];
-		// 	// echo json_encode($result);
-		// 	// header('location: '. BASEURL . '/po');
-		// 	$return = array(
-		// 		"msgtype" => "1",
-		// 		"message" => "Purchase Order Created",
-		// 		"docnum"  => $nextNumb['nextnumb']
-		// 	);
-		// 	echo json_encode($return);
-		// 	exit;			
-		// }else{
-		// 	$this->model('Po_model')->delete_error($nextNumb['nextnumb']);
-		// 	// $result = ["msg"=>"error"];
-		// 	// echo json_encode($result);
-		// 	// header('location: '. BASEURL . '/po/create');
-		// 	$return = array(
-		// 		"msgtype" => "2",
-		// 		"message" => "Create Purchase Order Failed",
-		// 		"docnum"  => ""
-		// 	);
-		// 	echo json_encode($return);
-		// 	exit;	
-		// }
+			// Flasher::setMessage('Purchase Order ', $nextNumb['nextnumb'] . ' created!', 'success');
+			// $result = ["msg"=>"success", "docnum"=>$nextNumb];
+			// echo json_encode($result);
+			// header('location: '. BASEURL . '/po');
+			$return = array(
+				"msgtype" => "1",
+				"message" => "Purchase Order Created",
+				"docnum"  => $nextNumb['nextnumb']
+			);
+			echo json_encode($return);
+			exit;			
+		}else{
+			$this->model('Po_model')->delete_error($nextNumb['nextnumb']);
+			// $result = ["msg"=>"error"];
+			// echo json_encode($result);
+			// header('location: '. BASEURL . '/po/create');
+			$return = array(
+				"msgtype" => "2",
+				"message" => "Create Purchase Order Failed",
+				"docnum"  => ""
+			);
+			echo json_encode($return);
+			exit;	
+		}
 	}
 
 	public function updatepo($params){
@@ -193,16 +191,16 @@ class Po extends Controller{
 		// echo json_encode($data);
 		if($checkapproved['rows'] == 0){
 			if( $this->model('Po_model')->delete($ponum) > 0 ) {
-				Flasher::setMessage('PO '. $ponum .' Berhasil','dihapus','success');
+				Flasher::setMessage('Purchase Order '. $ponum .' Deleted','','success');
 				header('location: '. BASEURL . '/po');
 				exit;			
 			}else{
-				Flasher::setMessage('Gagal menghapus PO,','','danger');
+				Flasher::setMessage('Failed Delete Purchase Order,','','danger');
 				header('location: '. BASEURL . '/po');
 				exit;	
 			}
 		}else{
-			Flasher::setMessage('PO '. $ponum .' tidak bisa dihapus karena sudah di approve/reject','','danger');
+			Flasher::setMessage('Cannot delete PO '. $ponum .', PO already approved/rejected','','danger');
 			header('location: '. BASEURL . '/po');
 			exit;
 		}
@@ -237,5 +235,9 @@ class Po extends Controller{
 			header('location: '. BASEURL . '/po');
 			exit;	
 		}
+	}
+
+	public function deletepoitem($ponum,$poitem){
+		$this->model('Po_model')->deletepoitem($ponum,$poitem);
 	}
 }

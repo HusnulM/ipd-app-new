@@ -145,4 +145,8 @@ class Requestslip extends Controller {
             exit;	
         }
     }
+
+    public function updatepostatus($reqnum, $reqitem){
+        $this->model('Requestslip_model')->updatepostatus($reqnum, $reqitem);
+    }
 }

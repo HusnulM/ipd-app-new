@@ -15,12 +15,12 @@ class Po_model{
     }
     
     public function getPOHeader($ponum){
-        $this->db->query("SELECT distinct ponum, warehouse, podat, vendor, namavendor, note, approvestat, alamat, createdon, fGetNamaUser(createdby) as 'createdby' From v_po001 WHERE ponum = '$ponum'");
+        $this->db->query("SELECT a.*, b.supplier_name, fGetUserName(a.createdby) as 'crtby' FROM t_po01 as a INNER JOIN t_supplier as b on a.vendor = b.supplier_id WHERE a.ponum = '$ponum'");
         return $this->db->single();
     }
 
     public function getPODetail($ponum){
-        $this->db->query("SELECT *, ponum as 'refnum', poitem as 'refitem', '' as 'fromwhs', '-' as 'towhs' FROM t_po02 WHERE ponum = '$ponum'");
+        $this->db->query("SELECT * FROM t_po02 WHERE ponum = '$ponum'");
         return $this->db->resultSet();
     }
 
@@ -90,13 +90,13 @@ class Po_model{
             $this->db->query($query1);
             $this->db->bind('ponum',       $ponum);
             $this->db->bind('ext_ponum',   $ponum);
-            $this->db->bind('potype',      $data['potype']);
+            $this->db->bind('potype',      null);
             $this->db->bind('podat',       $data['podate']);
             $this->db->bind('vendor',      $data['vendor']);
             $this->db->bind('note',        $data['note']);
             $this->db->bind('approvestat', '1');
-            $this->db->bind('currency',    'IDR');
-            $this->db->bind('warehouse',   $data['warehouse']);
+            $this->db->bind('currency',    'PHP');
+            $this->db->bind('warehouse',   null);
             $this->db->bind('createdon',   $createdon);
             $this->db->bind('createdby',   $_SESSION['usr']['user']);
             $this->db->execute();
@@ -106,13 +106,13 @@ class Po_model{
             $quantity = $data['itm_qty'];
             $unit     = $data['itm_unit'];
             $price    = $data['itm_price'];
-            $ppn      = $data['itm_ppn'];
-            $disc     = $data['itm_discount'];
+            // $ppn      = $data['itm_ppn'];
+            // $disc     = $data['itm_discount'];
             $prnum    = $data['itm_prnum'];
             $pritem   = $data['itm_pritem'];
     
-            $query2 = "INSERT INTO t_po02(ponum,poitem,material,matdesc,quantity,unit,price,ppn,discount,grqty,prnum,pritem,approvestat,createdon,createdby)
-                       VALUES(:ponum,:poitem,:material,:matdesc,:quantity,:unit,:price,:ppn,:discount,:grqty,:prnum,:pritem,:approvestat,:createdon,:createdby)";
+            $query2 = "INSERT INTO t_po02(ponum,poitem,material,matdesc,quantity,unit,price,grqty,requestnum,request_item,approvestat,createdon,createdby)
+                       VALUES(:ponum,:poitem,:material,:matdesc,:quantity,:unit,:price,:grqty,:requestnum,:request_item,:approvestat,:createdon,:createdby)";
             $this->db->query($query2);
             $item = 0;
             for($i = 0; $i < count($material); $i++){
@@ -133,20 +133,15 @@ class Po_model{
                 $_price = str_replace(",", ".", $_price);
     
                 $this->db->bind('price',       $_price);
-                $this->db->bind('ppn',         $ppn[$i]);
-
-                $_discn = "";
-                $_discn = str_replace(".", "",  $disc[$i]);
-                $_discn = str_replace(",", ".", $_discn);
-                $this->db->bind('discount',     $_discn);
+                
                 $this->db->bind('grqty',       '0');
     
-                if($prnum[$i] === "NULL" || $prnum[$i] === "null" || $prnum[$i] === ""){
-                    $this->db->bind('prnum',       null);
-                    $this->db->bind('pritem',      null);
+                if(!isset($prnum[$i])){
+                    $this->db->bind('requestnum',       null);
+                    $this->db->bind('request_item',      null);
                 }else{
-                    $this->db->bind('prnum',       $prnum[$i]);
-                    $this->db->bind('pritem',      $pritem[$i]);
+                    $this->db->bind('requestnum',       $prnum[$i]);
+                    $this->db->bind('request_item',     $pritem[$i]);
                 }
                 $this->db->bind('approvestat', '1');
                 $this->db->bind('createdon',   $createdon);
@@ -203,6 +198,15 @@ class Po_model{
         else {
             return "Email terkirim";
         }
+    }
+
+    public function deletepoitem($ponum,$poitem){
+        $this->db->query('DELETE FROM t_po02 WHERE ponum=:ponum and poitem=:poitem');
+        $this->db->bind('ponum', $ponum);
+        $this->db->bind('poitem',$poitem);
+        $this->db->execute();
+  
+        return $this->db->rowCount();
     }
 
     public function delete($ponum){

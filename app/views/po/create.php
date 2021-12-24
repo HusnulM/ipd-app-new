@@ -1,7 +1,7 @@
 <section class="content">
         <div class="container-fluid">
-            <form action="<?= BASEURL; ?>/po/savepo" method="POST" >
-            <!-- <form id="form-po-data" enctype="multipart/form-data"> -->
+            <!-- <form action="<?= BASEURL; ?>/po/savepo" method="POST" > -->
+            <form id="form-po-data" enctype="multipart/form-data">
                 <div class="row clearfix">
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                         <div class="card">
@@ -85,7 +85,6 @@
                                                         <th>Quantity</th>
                                                         <th>Unit</th>
                                                         <th>Unit Price</th>
-                                                        <!-- <th>Discount</th> -->
                                                         <th>Request Slip</th>
                                                         <th>Action</th>
                                                     </tr>
@@ -149,41 +148,6 @@
                         </div>
                         <div class="modal-footer">
                         <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-
-            <div class="modal fade" id="prListModal" tabindex="-1" role="dialog">
-                <div class="modal-dialog modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h4 class="modal-title" id="largeModalLabel">Pilih PR</h4>
-                        </div>
-                        <div class="modal-body">
-                            <div class="table-responsive">
-                                <table class="table table-responsive" id="list-pr" style="width:100%;">
-                                    <thead>
-                                        <tr>
-                                            <th>No PR</th>
-                                            <th>PR Item</th>
-                                            <th>Warehouse</th>
-                                            <th>Material</th>
-                                            <th>Description</th>
-                                            <th>Quantity</th>
-                                            <th>Open Quantity</th>
-                                            <th>Unit</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                        <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">TUTUP</button>
                         </div>
                     </div>
                 </div>
@@ -421,6 +385,7 @@
                         var count = 0;
                         var html = '';
                         for(var i = 0; i < data.length; i++){
+                            detail_order_beli.push(data[i]);
                             count = count+1;
                             var selqty = '';
                             selqty      = data[i].quantity.replace('.000','');
@@ -469,7 +434,7 @@
                             $('#btnRemove'+count).on('click', function(e){
                                 e.preventDefault();
                                 var row_index = $(this).closest("tr").index();
-                                // removeitem(row_index);                        
+                                removeitem(row_index);                        
                                 $(this).closest("tr").remove();
                                 renumberRows();
                                 // console.log(detail_order_beli)
@@ -482,6 +447,10 @@
                     });
                     $('#approvedReqeustSlipModal').modal('hide');
                 } ); 
+            }
+
+            function removeitem(index){
+                detail_order_beli.splice(index, 1);
             }
 
             function getMaterialbyKode(materialcode, callback){

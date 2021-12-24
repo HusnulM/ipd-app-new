@@ -16,7 +16,7 @@ class Requestslip_model{
     }
 
     public function getRequestForPO(){
-      $this->db->query("SELECT a.*, b.department FROM t_request_slip01 as a left join t_department as b on a.deptid = b.id WHERE a.final_approve = 'Y'");
+      $this->db->query("SELECT DISTINCT a.*, b.department FROM t_request_slip01 as a left join t_department as b on a.deptid = b.id INNER JOIN t_request_slip02 as c on a.requestnum = c.requestnum WHERE a.final_approve = 'Y' and c.po_created = 'N'");
 		  return $this->db->resultSet();
     }
 
@@ -141,5 +141,14 @@ class Requestslip_model{
         }
 
       return 1;
+    }
+
+    public function updatepostatus($reqnum, $reqitem){
+      $query2 = "UPDATE t_request_slip02 SET po_created=:po_created WHERE requestnum=:requestnum AND request_item=:request_item";
+      $this->db->bind('requestnum',        $reqnum);
+      $this->db->bind('request_item',      $reqitem);
+      $this->db->bind('po_created',        'N');
+      $this->db->query($query2);
+      $this->db->execute();
     }
 }
