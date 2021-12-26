@@ -14,12 +14,7 @@ class Po extends Controller{
 		$check = $this->model('Home_model')->checkUsermenu('po','Read');
         if ($check){
 			$data['title'] = 'Purchase Order';
-			$data['menu'] = 'Purchase Order';
-			
-			// Wajib di semua route ke view--------------------------------------------
-            $data['setting']  = $this->model('Setting_model')->getgensetting();    //--
-            $data['appmenu']  = $this->model('Home_model')->getUsermenu();         //--
-			//-------------------------------------------------------------------------   
+			$data['menu']  = 'Purchase Order';  
 
 			$data['podata']  = $this->model('Po_model')->listopenpo();
 	
@@ -36,13 +31,6 @@ class Po extends Controller{
         if ($check){
 			$data['title']    = 'Create Purchase Order';
 			$data['menu']     = 'Create Purchase Order';
-			
-			// Wajib di semua route ke view--------------------------------------------
-            $data['setting']  = $this->model('Setting_model')->getgensetting();    //--
-            $data['appmenu']  = $this->model('Home_model')->getUsermenu();         //--
-			//-------------------------------------------------------------------------   
-
-			// $data['whs']     = $this->model('Warehouse_model')->getWarehouseByAuth();  
 	
 			$this->view('templates/header_a', $data);
 			$this->view('po/create', $data);
@@ -190,6 +178,7 @@ class Po extends Controller{
 		$checkapproved = $this->model('Po_model')->checkpoitemapproved($ponum);
 		// echo json_encode($data);
 		if($checkapproved['rows'] == 0){
+			$isGR = $this->model('Po_model')->checkGrStatus($ponum);
 			if( $this->model('Po_model')->delete($ponum) > 0 ) {
 				Flasher::setMessage('Purchase Order '. $ponum .' Deleted','','success');
 				header('location: '. BASEURL . '/po');

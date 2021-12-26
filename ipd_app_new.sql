@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 24, 2021 at 05:17 AM
+-- Generation Time: Dec 26, 2021 at 03:47 AM
 -- Server version: 10.4.14-MariaDB
 -- PHP Version: 7.4.9
 
@@ -101,6 +101,31 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ResetData` ()  BEGIN
     TRUNCATE t_movement_01;
     TRUNCATE t_stock;
     UPDATE t_nriv set currentnum = '' WHERE object in('INVENTORY','PR');
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_TriggerMovement` (IN `pMaterial` VARCHAR(70), IN `pUnit` VARCHAR(15), IN `pQuantity` DECIMAL(15,3), IN `pPonum` VARCHAR(12), IN `pPoitem` INT, IN `pWarehouse` VARCHAR(10), IN `pMvt` INT(10))  NO SQL
+BEGIN
+	if pMvt = '101' THEN
+    call sp_InventoryStock(pMaterial, pQuantity, pMvt,pUnit,pWarehouse);
+    	call sp_UpdateGRPOStatus(pPonum,pPoitem,pQuantity); 
+    END if;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateGRPOStatus` (IN `pPonum` VARCHAR(15), IN `pPoitem` INT, IN `pGrqty` DECIMAL(15,3))  NO SQL
+BEGIN
+	DECLARE totalgr decimal(15,3);
+    DECLARE qtypo decimal(15,3);
+    
+    SELECT quantity INTO qtypo  FROM t_po02 WHERE ponum = pPonum and poitem = pPoitem;
+    SELECT grqty INTO totalgr FROM t_po02 WHERE ponum = pPonum and poitem = pPoitem;
+    
+    set totalgr = totalgr + pGrqty;
+
+    if totalgr = qtypo THEN
+    	UPDATE t_po02 SET grqty = totalgr, grstatus = 'X', pocomplete = 'Y' WHERE ponum = pPonum and poitem = pPoitem;
+    else 
+    	UPDATE t_po02 SET grqty = totalgr WHERE ponum = pPonum and poitem = pPoitem;
+        end if;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestSlipStatus` (IN `pReqnum` VARCHAR(15), IN `pReqitem` INT)  BEGIN
@@ -504,11 +529,9 @@ CREATE TABLE `t_inventory_stock` (
 --
 
 INSERT INTO `t_inventory_stock` (`material`, `warehouseid`, `quantity`, `unit`) VALUES
-('PART01', 'WH01', '94.000', 'PC'),
-('PART01', 'WH02', '5.000', 'PC'),
-('PART02', 'WH01', '0.000', 'PC'),
-('YPART-01', 'WH01', '4.000', 'PC'),
-('YPART-01', 'WH02', '10.000', 'PC');
+('PART005', 'WH01', '4000.000', 'PC'),
+('PART02', 'WH01', '3200.000', 'PC'),
+('PART03', 'WH01', '9000.000', 'PC');
 
 -- --------------------------------------------------------
 
@@ -770,15 +793,15 @@ INSERT INTO `t_menus` (`id`, `menu`, `route`, `type`, `icon`, `menugroup`, `grou
 (28, 'Stock Report', 'stockreport', 'parent', '', 3, NULL, 4, '2021-10-24 00:00:00', 'sys-admin'),
 (29, 'Issued Stock Report', 'stockreport/issuingstock', 'parent', '', 3, NULL, 5, '2021-10-24 00:00:00', 'sys-admin'),
 (30, 'Warehouse Master', 'warehouse', 'parent', '', 1, NULL, 7, '2021-11-02 00:00:00', 'sys-admin'),
-(31, 'Purchase Request Type', 'prtype', 'parent', '', 1, NULL, NULL, '2021-11-03 00:00:00', 'sys-admin'),
-(32, 'Create Request Slip', 'requestslip', 'parent', '', 2, NULL, NULL, '2021-11-17 00:00:00', 'sys-admin'),
-(33, 'Supplier Master', 'supplier', 'parent', '', 1, NULL, NULL, '2021-11-17 00:00:00', 'sys-admin'),
-(34, 'Create Quotation', 'quotation', 'parent', '', 2, NULL, NULL, '2021-11-17 00:00:00', 'sys-admin'),
-(35, 'Approve Quotation', 'quotation/approve', 'parent', '', 2, NULL, NULL, '2021-11-17 00:00:00', 'sys-admin'),
-(36, 'Create Purchase Order', 'po', 'parent', '', 2, NULL, NULL, '2021-11-17 00:00:00', 'sys-admin'),
+(31, 'Purchase Request Type', 'prtype', 'parent', '', 1, NULL, 8, '2021-11-03 00:00:00', 'sys-admin'),
+(32, 'Create Request Slip', 'requestslip', 'parent', '', 2, NULL, 6, '2021-11-17 00:00:00', 'sys-admin'),
+(33, 'Supplier Master', 'supplier', 'parent', '', 1, NULL, 9, '2021-11-17 00:00:00', 'sys-admin'),
+(36, 'Create Purchase Order', 'po', 'parent', '', 2, NULL, 7, '2021-11-17 00:00:00', 'sys-admin'),
 (37, 'Request Slip', 'requestslip/requestlist', 'parent', '', 2, NULL, NULL, '2021-12-19 00:00:00', 'sys-admin'),
 (38, 'Submit Request for PO', 'requestslip/submitpo', 'parent', '', 2, NULL, NULL, '2021-12-19 00:00:00', 'sys-admin'),
-(39, 'Approve Request Slip', 'approveslip', 'parent', '', 2, NULL, NULL, '2021-12-22 00:00:00', 'sys-admin');
+(39, 'Approve Request Slip', 'approveslip', 'parent', '', 2, NULL, 6, '2021-12-22 00:00:00', 'sys-admin'),
+(40, 'Receipt Purchase Order', 'grpo', 'parent', '', 2, NULL, 8, '2021-12-26 00:00:00', 'sys-admin'),
+(41, 'Approve Purchase Order', 'approvepo', 'parent', '', 2, NULL, 7, '2021-12-26 00:00:00', 'sys-admin');
 
 -- --------------------------------------------------------
 
@@ -801,13 +824,10 @@ CREATE TABLE `t_movement_01` (
 --
 
 INSERT INTO `t_movement_01` (`movement_number`, `movement_year`, `movement_date`, `movement_type`, `movement_note`, `createdby`, `createdon`) VALUES
-('2000000001', 2021, '2021-11-02', '601', 'Issuing Parts', 'sys-admin', '2021-11-02'),
-('2000000002', 2021, '2021-11-02', '601', 'Issuing Parts', 'sys-admin', '2021-11-02'),
-('2000000003', 2021, '2021-11-02', '601', 'Issuing Parts', 'sys-admin', '2021-11-02'),
-('2000000004', 2021, '2021-11-02', '601', 'Issuing Parts', 'sys-admin', '2021-11-02'),
-('2000000006', 2021, '2021-11-02', '101', 'Receipt 2', 'sys-admin', '2021-11-02'),
-('2000000007', 2021, '2021-11-03', '601', 'Issuing Parts', 'sys-admin', '2021-11-03'),
-('2000000008', 2021, '2021-11-04', '601', 'Issuing Parts', 'sys-admin', '2021-11-04');
+('5000000008', 2021, '2021-12-26', '101', 'Terima Barang', 'sys-admin', '2021-12-26'),
+('5000000009', 2021, '2021-12-26', '101', 'GR PO', 'sys-admin', '2021-12-26'),
+('5000000010', 2021, '2021-12-26', '101', 'Test GR PO', 'sys-admin', '2021-12-26'),
+('5000000011', 2021, '2021-12-26', '101', 'Receipt 2', 'sys-admin', '2021-12-26');
 
 --
 -- Triggers `t_movement_01`
@@ -831,8 +851,10 @@ CREATE TABLE `t_movement_02` (
   `warehouseid` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
   `material` varchar(70) COLLATE utf8mb4_unicode_ci NOT NULL,
   `matdesc` varchar(70) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `batchnumber` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `quantity` decimal(15,3) NOT NULL,
   `unit` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `warehouseto` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `unit_price` decimal(15,2) DEFAULT NULL,
   `prnum` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `pritem` int(11) DEFAULT NULL,
@@ -846,24 +868,20 @@ CREATE TABLE `t_movement_02` (
 -- Dumping data for table `t_movement_02`
 --
 
-INSERT INTO `t_movement_02` (`movement_number`, `movement_year`, `movement_item`, `movement_type`, `warehouseid`, `material`, `matdesc`, `quantity`, `unit`, `unit_price`, `prnum`, `pritem`, `ponum`, `poitem`, `createdby`, `createdon`) VALUES
-('2000000001', 2021, 1, '601', 'WH01', 'PART01', 'Part01 Testing', '2.000', 'PC', '4000.95', '1000000000', 1, NULL, NULL, 'sys-admin', '2021-11-02'),
-('2000000001', 2021, 2, '601', 'WH01', 'PART02', 'Part02 Testing', '3.000', 'PC', '9999.50', '1000000000', 2, NULL, NULL, 'sys-admin', '2021-11-02'),
-('2000000002', 2021, 1, '601', 'WH02', 'YPART-01', 'PART HONDA 1010', '10.000', 'PC', '1000.74', '1000000001', 1, NULL, NULL, 'sys-admin', '2021-11-02'),
-('2000000003', 2021, 1, '601', 'WH01', 'PART01', 'Part01 Testing', '2.000', 'PC', '4000.95', '1000000002', 1, NULL, NULL, 'sys-admin', '2021-11-02'),
-('2000000003', 2021, 2, '601', 'WH01', 'PART02', 'Part02 Testing', '3.000', 'PC', '9999.50', '1000000002', 2, NULL, NULL, 'sys-admin', '2021-11-02'),
-('2000000003', 2021, 3, '601', 'WH01', 'YPART-01', 'PART HONDA 1010', '5.000', 'PC', '1000.74', '1000000002', 3, NULL, NULL, 'sys-admin', '2021-11-02'),
-('2000000004', 2021, 1, '601', 'WH01', 'PART01', 'Part01 Testing', '5.000', 'PC', '4000.95', '1000000003', 1, NULL, NULL, 'sys-admin', '2021-11-02'),
-('2000000006', 2021, 1, '101', 'WH01', 'PART01', 'Part01 Testing', '100.000', 'PC', '0.00', NULL, NULL, NULL, NULL, 'sys-admin', '2021-11-02'),
-('2000000007', 2021, 1, '601', 'WH02', 'PART01', 'Part01 Testing', '5.000', 'PC', '4000.95', '1000000004', 1, NULL, NULL, 'sys-admin', '2021-11-03'),
-('2000000008', 2021, 1, '601', 'WH01', 'PART01', 'Part01 Testing', '1.000', 'PC', '4000.95', '1000000011', 1, NULL, NULL, 'sys-admin', '2021-11-04'),
-('2000000008', 2021, 2, '601', 'WH01', 'YPART-01', 'PART HONDA 1010', '1.000', 'PC', '1000.74', '1000000011', 2, NULL, NULL, 'sys-admin', '2021-11-04');
+INSERT INTO `t_movement_02` (`movement_number`, `movement_year`, `movement_item`, `movement_type`, `warehouseid`, `material`, `matdesc`, `batchnumber`, `quantity`, `unit`, `warehouseto`, `unit_price`, `prnum`, `pritem`, `ponum`, `poitem`, `createdby`, `createdon`) VALUES
+('5000000008', 2021, 1, '101', 'WH01', 'PART01', 'Part01 Testing', NULL, '1000.000', 'PC', NULL, NULL, NULL, NULL, '100001', 1, 'sys-admin', '2021-12-26'),
+('5000000008', 2021, 2, '101', 'WH01', 'PART02', 'Part02 Testing', NULL, '3000.000', 'PC', NULL, NULL, NULL, NULL, '100001', 2, 'sys-admin', '2021-12-26'),
+('5000000009', 2021, 1, '101', 'WH01', 'PART005', 'Test Part Image', NULL, '1000.000', 'PC', NULL, NULL, NULL, NULL, '100000', 1, 'sys-admin', '2021-12-26'),
+('5000000010', 2021, 1, '101', 'WH01', 'PART005', 'Test Part Image', NULL, '4000.000', 'PC', NULL, NULL, NULL, NULL, '100003', 1, 'sys-admin', '2021-12-26'),
+('5000000010', 2021, 2, '101', 'WH01', 'PART02', 'Part02 Testing', NULL, '2500.000', 'PC', NULL, NULL, NULL, NULL, '100003', 2, 'sys-admin', '2021-12-26'),
+('5000000011', 2021, 1, '101', 'WH01', 'PART02', 'Part02 Testing', NULL, '700.000', 'PC', NULL, NULL, NULL, NULL, '100004', 1, 'sys-admin', '2021-12-26'),
+('5000000011', 2021, 2, '101', 'WH01', 'PART03', 'Test Part With Image', NULL, '9000.000', 'PC', NULL, NULL, NULL, NULL, '100004', 2, 'sys-admin', '2021-12-26');
 
 --
 -- Triggers `t_movement_02`
 --
 DELIMITER $$
-CREATE TRIGGER `updateInventory` AFTER INSERT ON `t_movement_02` FOR EACH ROW call sp_InventoryStock(new.material, new.quantity, new.movement_type,new.unit,new.warehouseid)
+CREATE TRIGGER `updateInventory` AFTER INSERT ON `t_movement_02` FOR EACH ROW call sp_TriggerMovement(new.material,new.unit, new.quantity, new.ponum, new.poitem, new.warehouseid,new.movement_type)
 $$
 DELIMITER ;
 
@@ -885,6 +903,7 @@ CREATE TABLE `t_nriv` (
 --
 
 INSERT INTO `t_nriv` (`object`, `fromnum`, `tonumber`, `currentnum`) VALUES
+('GRPO', '5000000000', '5999999999', '5000000012'),
 ('INVENTORY', '2000000000', '2999999999', '2000000009'),
 ('PR', '1000000000', '1999999999', '1000000013'),
 ('REQ_SLIP', '3000000000', '3999999999', '3000000013'),
@@ -919,9 +938,10 @@ CREATE TABLE `t_po01` (
 --
 
 INSERT INTO `t_po01` (`ponum`, `ext_ponum`, `potype`, `podat`, `vendor`, `note`, `currency`, `approvestat`, `appby`, `final_approve`, `is_rejected`, `completed`, `warehouse`, `createdon`, `createdby`) VALUES
-('100000', '100000', NULL, '2021-12-24', '2000000000', 'PO 1 slip 3000000001', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, '2021-12-24 09:12:25', 'sys-admin'),
-('100001', '100001', NULL, '2021-12-24', '2000000000', 'PO 2 slip 3000000001', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, '2021-12-24 09:12:56', 'sys-admin'),
-('100002', '100002', NULL, '2021-12-24', '2000000000', 'Tes PO 6', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, '2021-12-24 11:12:46', 'sys-admin');
+('100000', '100000', NULL, '2021-12-24', '2000000000', 'PO 1 slip 3000000001', 'PHP', '1', NULL, 'Y', 'N', NULL, NULL, '2021-12-24 09:12:25', 'sys-admin'),
+('100001', '100001', NULL, '2021-12-24', '2000000000', 'PO 2 slip 3000000001', 'PHP', '1', NULL, 'Y', 'N', NULL, NULL, '2021-12-24 09:12:56', 'sys-admin'),
+('100003', '100003', NULL, '2021-12-26', '2000000000', 'Testing PO Full CYcle', 'PHP', '1', NULL, 'Y', 'N', NULL, NULL, '2021-12-26 09:12:51', 'sys-admin'),
+('100004', '100004', NULL, '2021-12-26', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'Y', 'N', NULL, NULL, '2021-12-26 09:12:23', 'sys-admin');
 
 --
 -- Triggers `t_po01`
@@ -947,11 +967,11 @@ CREATE TABLE `t_po02` (
   `price` decimal(15,2) DEFAULT NULL,
   `tax` int(11) DEFAULT NULL,
   `discount` decimal(15,2) DEFAULT NULL,
-  `grqty` decimal(15,2) DEFAULT NULL,
+  `grqty` decimal(15,3) DEFAULT NULL,
   `requestnum` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `request_item` int(11) DEFAULT NULL,
   `grstatus` varchar(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `pocomplete` varchar(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pocomplete` varchar(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
   `paymentstat` varchar(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `approvestat` varchar(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `approvedby` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -966,10 +986,13 @@ CREATE TABLE `t_po02` (
 --
 
 INSERT INTO `t_po02` (`ponum`, `poitem`, `material`, `matdesc`, `quantity`, `unit`, `price`, `tax`, `discount`, `grqty`, `requestnum`, `request_item`, `grstatus`, `pocomplete`, `paymentstat`, `approvestat`, `approvedby`, `final_approve`, `approvedate`, `createdon`, `createdby`) VALUES
-('100000', 1, 'PART005', 'Test Part Image', '1000.000', 'PC', '200.00', NULL, NULL, '0.00', '3000000001', 1, NULL, NULL, NULL, '1', NULL, NULL, NULL, '2021-12-24', 'sys-admin'),
-('100001', 1, 'PART01', 'Part01 Testing', '1000.000', 'PC', '350.00', NULL, NULL, '0.00', '3000000001', 3, NULL, NULL, NULL, '1', NULL, NULL, NULL, '2021-12-24', 'sys-admin'),
-('100001', 2, 'PART02', 'Part02 Testing', '3000.000', 'PC', '750.00', NULL, NULL, '0.00', '3000000001', 4, NULL, NULL, NULL, '1', NULL, NULL, NULL, '2021-12-24', 'sys-admin'),
-('100002', 1, 'PART006', 'Test Part With Image', '1500.000', 'PC', '7.50', NULL, NULL, '0.00', '3000000001', 2, NULL, NULL, NULL, '1', NULL, NULL, NULL, '2021-12-24', 'sys-admin');
+('100000', 1, 'PART005', 'Test Part Image', '1000.000', 'PC', '200.00', NULL, NULL, '1000.000', '3000000001', 1, 'X', 'Y', NULL, '1', NULL, NULL, NULL, '2021-12-24', 'sys-admin'),
+('100001', 1, 'PART01', 'Part01 Testing', '1000.000', 'PC', '350.00', NULL, NULL, '1000.000', '3000000001', 3, 'X', 'Y', NULL, '1', NULL, NULL, NULL, '2021-12-24', 'sys-admin'),
+('100001', 2, 'PART02', 'Part02 Testing', '3000.000', 'PC', '750.00', NULL, NULL, '3000.000', '3000000001', 4, 'X', 'Y', NULL, '1', NULL, NULL, NULL, '2021-12-24', 'sys-admin'),
+('100003', 1, 'PART005', 'Test Part Image', '4000.000', 'PC', '55.00', NULL, NULL, '4000.000', '3000000002', 1, 'X', 'Y', NULL, '1', NULL, NULL, NULL, '2021-12-26', 'sys-admin'),
+('100003', 2, 'PART02', 'Part02 Testing', '2500.000', 'PC', '789.00', NULL, NULL, '2500.000', '3000000002', 2, 'X', 'Y', NULL, '1', NULL, NULL, NULL, '2021-12-26', 'sys-admin'),
+('100004', 1, 'PART02', 'Part02 Testing', '700.000', 'PC', '900.00', NULL, NULL, '700.000', '3000000003', 1, 'X', 'Y', NULL, '1', NULL, NULL, NULL, '2021-12-26', 'sys-admin'),
+('100004', 2, 'PART03', 'Test Part With Image', '9000.000', 'PC', '999.00', NULL, NULL, '9000.000', '3000000003', 2, 'X', 'Y', NULL, '1', NULL, NULL, NULL, '2021-12-26', 'sys-admin');
 
 --
 -- Triggers `t_po02`
@@ -1193,16 +1216,16 @@ CREATE TABLE `t_request_slip01` (
 INSERT INTO `t_request_slip01` (`requestnum`, `request_date`, `request_by`, `request_note`, `request_status`, `final_approve`, `deptid`, `efile`, `createdon`, `createdby`) VALUES
 ('3000000001', '2021-12-18', 'Administrator', 'Test Request Slip', 3, 'Y', 1, NULL, '2021-12-18', 'sys-admin'),
 ('3000000002', '2021-12-19', 'Administrator', 'Request Slip 2', 3, 'Y', 1, NULL, '2021-12-19', 'sys-admin'),
-('3000000003', '2021-12-19', 'Administrator', 'Test Slip', 2, 'N', 1, NULL, '2021-12-19', 'sys-admin'),
-('3000000004', '2021-12-21', 'Administrator', 'Test Slip', 2, 'N', 1, '3000000004-WSU - IPD System.docx', '2021-12-21', 'sys-admin'),
-('3000000005', '2021-12-21', 'Administrator', 'Test Slip with attachment', 2, 'N', 1, '3000000005-WSU - IPD System.docx', '2021-12-21', 'sys-admin'),
-('3000000006', '2021-12-21', 'Administrator', 'Test Request Slip', 2, 'N', 1, '3000000006-WSU - IPD System.docx', '2021-12-21', 'sys-admin'),
+('3000000003', '2021-12-19', 'Administrator', 'Test Slip', 3, 'Y', 1, NULL, '2021-12-19', 'sys-admin'),
+('3000000004', '2021-12-21', 'Administrator', 'Test Slip', 3, 'Y', 1, '3000000004-WSU - IPD System.docx', '2021-12-21', 'sys-admin'),
+('3000000005', '2021-12-21', 'Administrator', 'Test Slip with attachment', 3, 'Y', 1, '3000000005-WSU - IPD System.docx', '2021-12-21', 'sys-admin'),
+('3000000006', '2021-12-21', 'Administrator', 'Test Request Slip', 3, 'Y', 1, '3000000006-WSU - IPD System.docx', '2021-12-21', 'sys-admin'),
 ('3000000007', '2021-12-21', 'Administrator', 'Test Slip with attachment', 3, 'Y', 1, '3000000007-TemplateReportGI.xlsx', '2021-12-21', 'sys-admin'),
 ('3000000008', '2021-12-22', 'Administrator', 'Test Slip', 3, 'Y', 1, '3000000008-Testing BAPI DP PO.docx', '2021-12-22', 'sys-admin'),
-('3000000009', '2021-12-23', 'Administrator', 'Test Multiple Attachment', 2, 'N', 1, NULL, '2021-12-23', 'sys-admin'),
-('3000000010', '2021-12-23', 'Administrator', 'Test Multiple Attachment', 1, 'N', 1, NULL, '2021-12-23', 'sys-admin'),
-('3000000011', '2021-12-23', 'Administrator', 'Reqeust with multiple attachment', 1, 'N', 1, NULL, '2021-12-23', 'sys-admin'),
-('3000000012', '2021-12-23', 'Administrator', 'Test Request Slip', 1, 'N', 1, NULL, '2021-12-23', 'sys-admin');
+('3000000009', '2021-12-23', 'Administrator', 'Test Multiple Attachment', 3, 'Y', 1, NULL, '2021-12-23', 'sys-admin'),
+('3000000010', '2021-12-23', 'Administrator', 'Test Multiple Attachment', 3, 'Y', 1, NULL, '2021-12-23', 'sys-admin'),
+('3000000011', '2021-12-23', 'Administrator', 'Reqeust with multiple attachment', 3, 'Y', 1, NULL, '2021-12-23', 'sys-admin'),
+('3000000012', '2021-12-23', 'Administrator', 'Test Request Slip', 3, 'Y', 1, NULL, '2021-12-23', 'sys-admin');
 
 -- --------------------------------------------------------
 
@@ -1229,13 +1252,13 @@ CREATE TABLE `t_request_slip02` (
 
 INSERT INTO `t_request_slip02` (`requestnum`, `request_item`, `material`, `quantity`, `unit`, `unit_price`, `approvestat`, `po_created`, `createdon`, `createdby`) VALUES
 ('3000000001', 1, 'PART005', '1000.000', 'PC', '650.00', 1, 'Y', '2021-12-18', 'sys-admin'),
-('3000000001', 2, 'PART006', '1500.000', 'PC', '850.00', 1, 'Y', '2021-12-18', 'sys-admin'),
+('3000000001', 2, 'PART006', '1500.000', 'PC', '850.00', 1, 'N', '2021-12-18', 'sys-admin'),
 ('3000000001', 3, 'PART01', '1000.000', 'PC', '4000.95', 1, 'Y', '2021-12-18', 'sys-admin'),
 ('3000000001', 4, 'PART02', '3000.000', 'PC', '9999.50', 1, 'Y', '2021-12-18', 'sys-admin'),
-('3000000002', 1, 'PART005', '4000.000', 'PC', '700.00', 1, 'N', '2021-12-19', 'sys-admin'),
-('3000000002', 2, 'PART02', '2500.000', 'PC', '650.00', 1, 'N', '2021-12-19', 'sys-admin'),
-('3000000003', 1, 'PART02', '700.000', 'PC', '9999.50', 1, 'N', '2021-12-19', 'sys-admin'),
-('3000000003', 2, 'PART03', '9000.000', 'PC', '100.00', 1, 'N', '2021-12-19', 'sys-admin'),
+('3000000002', 1, 'PART005', '4000.000', 'PC', '700.00', 1, 'Y', '2021-12-19', 'sys-admin'),
+('3000000002', 2, 'PART02', '2500.000', 'PC', '650.00', 1, 'Y', '2021-12-19', 'sys-admin'),
+('3000000003', 1, 'PART02', '700.000', 'PC', '9999.50', 1, 'Y', '2021-12-19', 'sys-admin'),
+('3000000003', 2, 'PART03', '9000.000', 'PC', '100.00', 1, 'Y', '2021-12-19', 'sys-admin'),
 ('3000000004', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'N', '2021-12-21', 'sys-admin'),
 ('3000000004', 2, 'PART006', '2000.000', 'PC', '0.00', 1, 'N', '2021-12-21', 'sys-admin'),
 ('3000000005', 1, 'PART005', '4000.000', 'PC', '0.00', 1, 'N', '2021-12-21', 'sys-admin'),
@@ -1347,8 +1370,8 @@ INSERT INTO `t_rolemenu` (`roleid`, `menuid`, `createdon`, `createdby`) VALUES
 (1, 32, '2021-11-17 00:00:00', 'sys-admin'),
 (1, 33, '2021-11-17 00:00:00', 'sys-admin'),
 (1, 36, '2021-11-17 00:00:00', 'sys-admin'),
-(1, 37, '2021-12-19 00:00:00', 'sys-admin'),
 (1, 39, '2021-12-22 00:00:00', 'sys-admin'),
+(1, 40, '2021-12-26 00:00:00', 'sys-admin'),
 (2, 18, '2021-08-17 00:00:00', 'sys-admin'),
 (2, 23, '2021-08-17 00:00:00', 'sys-admin'),
 (2, 39, '2021-12-22 00:00:00', 'sys-admin'),
@@ -1469,14 +1492,14 @@ INSERT INTO `t_role_avtivity` (`roleid`, `menuid`, `activity`, `status`, `create
 (1, 36, 'Delete', 1, '2021-11-17'),
 (1, 36, 'Read', 1, '2021-11-17'),
 (1, 36, 'Update', 1, '2021-11-17'),
-(1, 37, 'Create', 1, '2021-12-19'),
-(1, 37, 'Delete', 1, '2021-12-19'),
-(1, 37, 'Read', 1, '2021-12-19'),
-(1, 37, 'Update', 1, '2021-12-19'),
 (1, 39, 'Create', 1, '2021-12-22'),
 (1, 39, 'Delete', 0, '2021-12-22'),
 (1, 39, 'Read', 1, '2021-12-22'),
 (1, 39, 'Update', 1, '2021-12-22'),
+(1, 40, 'Create', 1, '2021-12-26'),
+(1, 40, 'Delete', 1, '2021-12-26'),
+(1, 40, 'Read', 1, '2021-12-26'),
+(1, 40, 'Update', 1, '2021-12-26'),
 (2, 18, 'Create', 1, '2021-08-17'),
 (2, 18, 'Delete', 1, '2021-08-17'),
 (2, 18, 'Read', 1, '2021-08-17'),
@@ -2219,7 +2242,7 @@ ALTER TABLE `t_menugroups`
 -- AUTO_INCREMENT for table `t_menus`
 --
 ALTER TABLE `t_menus`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `t_process_sequence`

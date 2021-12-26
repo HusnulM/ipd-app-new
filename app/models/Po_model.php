@@ -13,6 +13,10 @@ class Po_model{
 		$this->db->query("CALL sp_NextNriv('$object')");
 		return $this->db->single();
     }
+
+    public function checkGrStatus($ponum){
+        
+    }
     
     public function getPOHeader($ponum){
         $this->db->query("SELECT a.*, b.supplier_name, fGetUserName(a.createdby) as 'crtby' FROM t_po01 as a INNER JOIN t_supplier as b on a.vendor = b.supplier_id WHERE a.ponum = '$ponum'");
