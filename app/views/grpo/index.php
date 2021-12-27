@@ -408,7 +408,7 @@
                         { "data": "supplier_name" },
                         { "data": "podat" },
                         { "data": "note" },
-                        {"defaultContent": "<button class='btn btn-primary btn-xs'>Pilih</button>"}
+                        {"defaultContent": "<button class='btn btn-primary btn-xs'>SELECT</button>"}
                     ],
                     "bDestroy": true,
                     "paging":   true,
