@@ -289,7 +289,7 @@
                     var _refitem = '';
 
                     var quantity = 0;
-                    quantity = _data[i].quantity;
+                    quantity = _data[i].openqty;
 
                     selqty     = quantity.toString();
                     // selqty      = data[i].quantity.replace('.000','');
@@ -315,7 +315,7 @@
                             </td>
                             
                             <td> 
-                                <input type="text" name="itm_qty[]" counter="`+count+`" id="inputqty`+count+`"  class="form-control inputNumber inputQty" style="width:100px; text-align:right;" required="true" value="`+ formatNumber(selqty) +`" />
+                                <input type="text" name="itm_qty[]" counter="`+count+`" id="inputqty`+count+`"  class="form-control inputNumber inputQty" style="width:100px; text-align:right;" required="true" value="`+ formatNumber(selqty) +`" data-openqty="`+quantity+`" />
                             </td>
                             <td> 
                             `+ _data[i].unit +`
@@ -365,15 +365,20 @@
                     });
 
                     $('#inputqty'+count).on('change', function(){
-                        var inputqty = this.value;
+                        var _inputqty = this.value;
+                        
+                        var inputqty = _inputqty.replaceAll(',','');
+                        // alert(inputqty)
+                        var _data    = $(this).data();
                         var currentcounter = $(this).attr('counter');
                         // console.log('change qty')
                         
-                        if($('#movement').val() === "GR01"){
-                            if(inputqty > quantity){
-                                showErrorMessage('Input Quantity Lebih Besar Dari Quantity PO');
-                                this.value = quantity;
-                            }
+                        if((inputqty*1) > (_data.openqty*1)){
+                            var _openqty = '';
+                            _openqty     = _data.openqty.toString();
+                            _openqty     = _openqty.replaceAll('.000','');  
+                            showErrorMessage('Input quantity ('+ inputqty +') greater than open quantity ('+ _openqty +')');
+                            this.value = formatNumber(_openqty);
                         }
                     });                    
                 }

@@ -15,7 +15,7 @@ class Grpo_model{
     }
 
     public function getPOitemtoGR($ponum){
-        $this->db->query("SELECT * FROM t_po02 WHERE ponum = '$ponum' and pocomplete = 'N'");
+        $this->db->query("SELECT *, quantity-grqty as 'openqty' FROM t_po02 WHERE ponum = '$ponum' and pocomplete = 'N'");
         return $this->db->resultSet();
     }
 
