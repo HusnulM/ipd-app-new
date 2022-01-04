@@ -54,13 +54,21 @@
                                         </div>    
                                     </div>                                    
 
-                                    <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12">
+                                    <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
                                         <div class="form-group">
                                             <div class="form-line">
                                                 <label for="note">Note</label>
                                                 <input type="text" name="note" id="note" class="form-control" placeholder="Note" required>
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <label for="attachment">Attachment</label>
+                                                <input type="file" name="attachment[]" id="attachment" class="form-control" multiple>
+                                            </div>
+                                        </div>    
                                     </div>
                                 </div>  
                             </div>

@@ -14,6 +14,10 @@
                                     <i class="material-icons">backspace</i> <span>BACK</span>
                                 </a>
 
+                                <button type="button" class="btn bg-green" id="btn-view-attachment">
+                                <i class="material-icons" id="_icon">attachment</i>VIEW Attachment
+                                </button>
+
                                 <a href="<?= BASEURL; ?>/approvepo/approve/<?= $data['pohead']['ponum']; ?>" type="button" class="btn bg-blue ">
                                     <i class="material-icons" id="_icon">done</i>
                                     Approve
@@ -27,45 +31,46 @@
                         </div>
                         <div class="body">
                             <div class="row clearfix">
-                                <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
-                                    <div class="form-group">
-                                        <div class="form-line">
-                                            <label for="vendor">Vendor / Supplier</label>
-                                            <input type="text" name="namavendor" id="namavendor" class="form-control readOnly" value="<?= $data['vendor']['supplier_name']; ?>" required>
-                                            <input type="hidden" name="vendor" id="vendor" value="<?= $data['pohead']['vendor']; ?>">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <div class="row">
+                                    <div class="col-lg-8 col-md-6 col-sm-10 col-xs-10">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <label for="vendor">Vendor / Supplier</label>
+                                                <input type="text" name="namavendor" id="namavendor" class="form-control readOnly" value="<?= $data['vendor']['supplier_name']; ?>" required>
+                                                <input type="hidden" name="vendor" id="vendor" value="<?= $data['pohead']['vendor']; ?>">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <br>
+                                                
+                                            </div>
+                                        </div>    
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-3 col-md-6 col-sm-12 col-xs-12">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <label for="podate">PO Date</label>
+                                                <input type="date" name="podate" id="podate" class="datepicker form-control readOnly" placeholder="" required value="<?= $data['pohead']['podat']; ?>">
+                                            </div>
+                                        </div>    
+                                    </div>
+    
+                                    <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <label for="note">Note</label>
+                                                <input type="text" name="note" id="note" class="form-control readOnly" placeholder="Note" value="<?= $data['pohead']['note']; ?>">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 hideComponent">
-                                    <div class="form-group">
-                                        <div class="form-line">
-                                            <br>
-                                            <button class="btn bg-blue form-control hideComponent" type="button" id="btn-search-vendor">
-                                            <i class="material-icons">format_list_bulleted</i> <span>Choose Vendor</span>
-                                            </button>
-                                        </div>
-                                    </div>    
-                                </div>
                                 
-                                
-                                
-                                <div class="col-lg-3 col-md-6 col-sm-12 col-xs-12">
-                                    <div class="form-group">
-                                        <div class="form-line">
-                                            <label for="podate">PO Date</label>
-                                            <input type="date" name="podate" id="podate" class="datepicker form-control readOnly" placeholder="" required value="<?= $data['pohead']['podat']; ?>">
-                                        </div>
-                                    </div>    
-                                </div>
-
-                                <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12">
-                                    <div class="form-group">
-                                        <div class="form-line">
-                                            <label for="note">Note</label>
-                                            <input type="text" name="note" id="note" class="form-control readOnly" placeholder="Note" value="<?= $data['pohead']['note']; ?>">
-                                        </div>
-                                    </div>
-                                </div>
 
                                 <!-- <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
                                     <div class="form-group">
@@ -75,7 +80,8 @@
                                         </div>
                                     </div>
                                 </div> -->
-                            </div>                                
+                            </div>       
+                            </div>                          
                         </div>
                     </div>
 
@@ -199,7 +205,40 @@
         </div>
     </div>
 
-    
+    <div class="modal fade" id="attachmentModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="attachmentModalText">Attachment List</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-responsive" id="tbl-err-msg" style="width:100%;">
+                            <thead>
+                                <th>No</th>
+                                <th>Attachment</th>
+                            </thead>
+                            <tbody>
+                                <?php $icount = 0; ?>
+                                <?php foreach ($data['attachments'] as $row) :?>
+                                    <?php $icount += 1; ?>
+                                    <tr>
+                                        <td><?= $icount; ?></td>
+                                        <td>
+                                            <a href="<?= BASEURL; ?>/efile/po/<?= $row['efile']; ?>" target="_blank"><?= $row['efile']; ?></a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
     
 
@@ -245,6 +284,10 @@
         $(document).ready(function(){
 
             $('.hideComponent').hide();
+
+            $('#btn-view-attachment').on('click', function(){
+                $('#attachmentModal').modal('show');
+            });
 
             // $('#btn-change').on('click', function(){
             //     if(this.innerText === "edit CHANGE"){

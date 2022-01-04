@@ -9,6 +9,11 @@ class Approvepo_model{
 		$this->db = new Database;
     }
 
+    public function getAttachment($ponum){
+        $this->db->query("SELECT * from t_po03 where ponum = '$ponum'");
+        return $this->db->resultSet();
+    }
+
     public function getApprovalLevel($user, $creator,$prtype){
         $this->db->query("SELECT level from t_approval where object ='PO' and approval = '$user' and creator = '$creator' limit 1");
         return $this->db->single();

@@ -152,6 +152,25 @@ class Po_model{
                 $this->db->bind('createdby',   $_SESSION['usr']['user']);
                 $this->db->execute();
             }
+
+            
+            $filename      = $_FILES['attachment']['name'];
+            if(isset($filename)){
+                $query3 = "INSERT INTO t_po03(ponum,efile)
+                    VALUES(:ponum,:efile)";
+                $this->db->query($query3);
+                for($i = 0; $i < sizeof($filename); $i++){
+                    
+                    $namafile      = $ponum."-".$filename[$i];
+                    $location      = "./efile/po/". $namafile;
+                    $temp          = $_FILES['attachment']['tmp_name'][$i];
+                    move_uploaded_file($temp, $location);
+    
+                    $this->db->bind('ponum',    $ponum);
+                    $this->db->bind('efile',    $namafile);
+                    $this->db->execute();
+                }
+            }
             return $this->db->rowCount();
         // }catch (Exception $e) {
         //     $message = 'Caught exception: '.  $e->getMessage(). "\n";

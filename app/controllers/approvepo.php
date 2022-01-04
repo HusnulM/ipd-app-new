@@ -45,6 +45,7 @@ class Approvepo extends Controller{
 			$data['ponum'] = $ponum;
             $data['pohead']   = $this->model('Po_model')->getPOHeader($ponum);
 			$data['vendor']   = $this->model('Supplier_model')->getSupplierByID($data['pohead']['vendor']);
+			$data['attachments'] = $this->model('Approvepo_model')->getAttachment($ponum);
 			
 			$this->view('templates/header_a', $data);
 			$this->view('approvepo/detail', $data);
