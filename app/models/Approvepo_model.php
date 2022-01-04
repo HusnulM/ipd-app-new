@@ -14,6 +14,11 @@ class Approvepo_model{
         return $this->db->resultSet();
     }
 
+    public function getPoTotalPrice($ponum){
+        $this->db->query("SELECT cast(sum(totalprice) as decimal(15,2)) as 'price' from v_po02 where ponum = '$ponum'");
+        return $this->db->single();
+    }
+
     public function getApprovalLevel($user, $creator,$prtype){
         $this->db->query("SELECT level from t_approval where object ='PO' and approval = '$user' and creator = '$creator' limit 1");
         return $this->db->single();

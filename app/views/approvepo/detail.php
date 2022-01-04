@@ -15,25 +15,26 @@
                                 </a>
 
                                 <button type="button" class="btn bg-green" id="btn-view-attachment">
-                                <i class="material-icons" id="_icon">attachment</i>VIEW Attachment
+                                    <i class="material-icons" id="_icon">attachment</i>
+                                    <span>VIEW Attachment</span>
+                                </button>
+
+                                <button type="button" id="btn-reject" data-ponum="<?= $data['pohead']['ponum']; ?>" class="btn bg-red ">
+                                    <i class="material-icons" id="_icon">highlight_off</i>
+                                    <span>Reject</span>
                                 </button>
 
                                 <a href="<?= BASEURL; ?>/approvepo/approve/<?= $data['pohead']['ponum']; ?>" type="button" class="btn bg-blue ">
                                     <i class="material-icons" id="_icon">done</i>
-                                    Approve
+                                    <span>Approve</span>
                                 </a>
-
-                                <!-- <button type="button" id="btn-change" class="btn bg-blue ">
-                                    <i class="material-icons" id="_icon">edit</i> 
-                                    <span id="act-txt">CHANGE</span>
-                                </button>     -->
                             </ul>
                         </div>
                         <div class="body">
                             <div class="row clearfix">
                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                 <div class="row">
-                                    <div class="col-lg-8 col-md-6 col-sm-10 col-xs-10">
+                                    <div class="col-lg-9 col-md-6 col-sm-12 col-xs-12">
                                         <div class="form-group">
                                             <div class="form-line">
                                                 <label for="vendor">Vendor / Supplier</label>
@@ -42,16 +43,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12">
-                                        <div class="form-group">
-                                            <div class="form-line">
-                                                <br>
-                                                
-                                            </div>
-                                        </div>    
-                                    </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-lg-3 col-md-6 col-sm-12 col-xs-12">
                                         <div class="form-group">
                                             <div class="form-line">
@@ -60,7 +51,8 @@
                                             </div>
                                         </div>    
                                     </div>
-    
+                                </div>
+                                <div class="row">    
                                     <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12">
                                         <div class="form-group">
                                             <div class="form-line">
@@ -68,6 +60,14 @@
                                                 <input type="text" name="note" id="note" class="form-control readOnly" placeholder="Note" value="<?= $data['pohead']['note']; ?>">
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6 col-sm-12 col-xs-12">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <label for="podate">Total Price</label>
+                                                <input type="text" class="form-control readOnly" style="text-align:right;" value="<?= number_format($data['totalprice']['price'],2); ?>">
+                                            </div>
+                                        </div>    
                                     </div>
                                 </div>
                                 
@@ -239,6 +239,27 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="rejectModalText">Reject Note</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <textarea name="reject-note" id="reject-note" cols="30" rows="5" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
+                    <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal">SAVE REJECTION</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
     
 
@@ -287,6 +308,10 @@
 
             $('#btn-view-attachment').on('click', function(){
                 $('#attachmentModal').modal('show');
+            });
+
+            $('#btn-reject').on('click', function(){
+                $('#rejectModal').modal('show');
             });
 
             // $('#btn-change').on('click', function(){

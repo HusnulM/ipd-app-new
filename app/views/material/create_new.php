@@ -148,8 +148,7 @@
 
             var harga  = document.getElementById('stdprice');
 
-            harga.addEventListener('keyup', function(e){
-                // harga.value = formatRupiah(this.value, '2');
+            harga.addEventListener('change', function(e){
                 harga.value = formatNumber(this.value);
             });
 

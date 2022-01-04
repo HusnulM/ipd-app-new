@@ -53,6 +53,7 @@ class Po extends Controller{
 			$data['pohead']   = $this->model('Po_model')->getPOHeader($ponum);
 			// $data['poamount'] = $this->model('Approvepo_model')->GetTotalPOAmount($ponum);
 			$data['vendor']   = $this->model('Supplier_model')->getSupplierByID($data['pohead']['vendor']);
+			$data['attachments'] = $this->model('Approvepo_model')->getAttachment($ponum);
 			// $data['whs']      = $this->model('Warehouse_model')->getWarehouseByAuth();  
 			// $data['_whs']     = $this->model('Warehouse_model')->getById($data['pohead']['warehouse']);
 	

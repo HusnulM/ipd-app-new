@@ -8,12 +8,37 @@
                         <h2>
                             <?= $data['menu']; ?> | <b><?= $data['reqheader']['requestnum']; ?></b>
                         </h2>
+                        <ul class="header-dropdown m-r--5">   
+                            <a href="<?= BASEURL; ?>/approveslip" class="btn bg-teal waves-effect">
+                                <i class="material-icons">backspace</i> <span>BACK</span>
+                            </a>
+
+                            <button type="button" class="btn bg-green" id="btn-view-attachment">
+                                <i class="material-icons" id="_icon">attachment</i>
+                                <span>VIEW Attachment</span>
+                            </button>
+
+                            <button type="button" id="btn-reject" data-reqnum="<?= $data['reqheader']['requestnum']; ?>" class="btn bg-red ">
+                                <i class="material-icons" id="_icon">highlight_off</i>
+                                <span>Reject</span>
+                            </button>
+
+                            <button type="submit" class="btn bg-blue">
+                                <i class="material-icons">save</i> <span>APPROVE SLIP</span>
+                            </button>
+
+                            <!-- <a href="<?= BASEURL; ?>/approvepo/approve/<?= $data['pohead']['ponum']; ?>" type="button" class="btn bg-blue ">
+                                <i class="material-icons" id="_icon">done</i>
+                                <span>Approve</span>
+                            </a> -->
+                        </ul>
+                            
                     </div>
                     <div class="body">
                         <div class="row clearfix">
                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                 <div class="row">
-                                    <div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                         <div class="form-group">
                                             <div class="form-line">
                                                 <label for="note">Note</label>
@@ -23,14 +48,14 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12">
+                                    <!-- <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12">
                                         <div class="form-group">
                                             <div class="form-line">
                                                 <br>
                                                 <button type="button" class="btn btn-primary" id="btn-view-attachment">VIEW Attachment</button>
                                             </div>
                                         </div>    
-                                    </div>
+                                    </div> -->
                                 </div>
 
                                 <div class="row">
@@ -127,14 +152,14 @@
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
-                                <ul class="pull-right">    
+                                <!-- <ul class="pull-right">    
                                     <a href="<?= BASEURL; ?>/approveslip" class="btn bg-red">
                                         <i class="material-icons">highlight_off</i> <span>CANCEL</span>
                                     </a>
                                     <button type="submit" class="btn bg-blue">
                                         <i class="material-icons">save</i> <span>APPROVE SLIP</span>
                                     </button>
-                                </ul>
+                                </ul> -->
                             </div>
                         </div>
                     </div>
@@ -230,6 +255,27 @@
             </div>
         </div>            
     </div>
+
+    <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="rejectModalText">Reject Note</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <textarea name="reject-note" id="reject-note" cols="30" rows="5" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
+                    <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal">SAVE REJECTION</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
     
 
@@ -275,6 +321,10 @@
 
             $('#btn-view-attachment').on('click', function(){
                 $('#attachmentModal').modal('show');
+            });
+
+            $('#btn-reject').on('click', function(){
+                $('#rejectModal').modal('show');
             });
 
             function formatNumber(num) {

@@ -14,6 +14,11 @@
                                     <i class="material-icons">backspace</i> <span>BACK</span>
                                 </a>
 
+                                <button type="button" class="btn bg-green" id="btn-view-attachment">
+                                    <i class="material-icons" id="_icon">attachment</i>
+                                    <span id="act-txt">VIEW Attachment</span>
+                                </button>
+
                                 <button type="button" id="btn-change" class="btn bg-blue ">
                                     <i class="material-icons" id="_icon">edit</i> 
                                     <span id="act-txt">CHANGE</span>
@@ -194,7 +199,40 @@
         </div>
     </div>
 
-    
+    <div class="modal fade" id="attachmentModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="attachmentModalText">Attachment List</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-responsive" id="tbl-err-msg" style="width:100%;">
+                            <thead>
+                                <th>No</th>
+                                <th>Attachment</th>
+                            </thead>
+                            <tbody>
+                                <?php $icount = 0; ?>
+                                <?php foreach ($data['attachments'] as $row) :?>
+                                    <?php $icount += 1; ?>
+                                    <tr>
+                                        <td><?= $icount; ?></td>
+                                        <td>
+                                            <a href="<?= BASEURL; ?>/efile/po/<?= $row['efile']; ?>" target="_blank"><?= $row['efile']; ?></a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
     
 
@@ -240,6 +278,9 @@
         $(document).ready(function(){
 
             $('.hideComponent').hide();
+            $('#btn-view-attachment').on('click', function(){
+                $('#attachmentModal').modal('show');
+            });
 
             $('#btn-change').on('click', function(){
                 if(this.innerText === "edit CHANGE"){
