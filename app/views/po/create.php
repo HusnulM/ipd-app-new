@@ -306,6 +306,7 @@
                             processData: false,
                             beforeSend:function(){
                                 $('#btn-save').attr('disabled','disabled');
+                                showBasicMessage();
                             },
                             success:function(data)
                             {
@@ -493,6 +494,10 @@
 
             function showErrorMessage(message){
                 swal("", message, "warning");
+            }
+
+            function showBasicMessage() {
+                swal({title:"Loading...", text:"Please wait...", showConfirmButton: false});
             }
 
             function formatRupiah(angka, prefix){

@@ -127,14 +127,14 @@ class Po_model{
                 $this->db->bind('matdesc',     $matdesc[$i]);
 
                 $_menge = "";
-                $_menge = str_replace(".", "",  $quantity[$i]);
-                $_menge = str_replace(",", ".", $_menge);
+                $_menge = str_replace(",", "",  $quantity[$i]);
+                // $_menge = str_replace(",", ".", $_menge);
 
                 $this->db->bind('quantity',    $_menge);
                 $this->db->bind('unit',        $unit[$i]);
                 $_price = "";
-                $_price = str_replace(".", "",  $price[$i]);
-                $_price = str_replace(",", ".", $_price);
+                $_price = str_replace(",", "",  $price[$i]);
+                // $_price = str_replace(",", ".", $_price);
     
                 $this->db->bind('price',       $_price);
                 
@@ -179,47 +179,119 @@ class Po_model{
         // }
     }
 
-    public function kirimnotifpr($ponum){
-        $toemail = 'husnulmub@gmail.com'; //email penerima
-        $pesan   = 'Silahkan approve pr '. $ponum ; //isi email
-        
-        $email    = 'erpms100@gmail.com'; //email pengirim, silahkan diganti dengan email sendiri
-        $password = 's_erp.v100'; //password gmail
+    public function getFirstApproval($creator){
+        $this->db->query("SELECT a.object, a.level, a.creator, a.approval, b.email from t_approval as a inner JOIN t_user as b on a.approval = b.username where object ='PO' and creator = '$creator' order by level asc limit 1");
+        return $this->db->single();
+    }
+
+    public function getMailConfig(){
+        $this->db->query("SELECT * FROM t_email_config limit 1");
+        return $this->db->single();
+    }
+
+    public function sendApprovalNotif($reqnum){
+        $prhead   = $this->getPOHeader($reqnum);
+        $prdata   = $this->getPODetail($reqnum);
+        $approval = $this->getFirstApproval($prhead['createdby']);
+  
+        $mailConfig = $this->getMailConfig();
+  
+        // echo json_encode($mailConfig);
+  
+        $toemail  = $approval['email'];      
+        $email    = $mailConfig['username'];
+        $password = $mailConfig['password'];
         
         $to_id = $toemail;
-        $message = $pesan;
-        $subject = 'Purchase Order '. $ponum ;
+  
+        $subject = 'Purchase Order Approval '. $reqnum ;
         $mail = new PHPMailer;
-        $mail->FromName = "ERP System";
+        // $mail->FromName = $mailConfig['sender_name'];
+        $mail->FromName = 'Purchase Order Approval';
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
+        $mail->Host = $mailConfig['host'];
         $mail->Port = 587;
-        $mail->SMTPSecure = 'tls';
+        $mail->SMTPSecure = $mailConfig['encryption'];
         $mail->SMTPAuth = true;
         $mail->Username = $email;
         $mail->Password = $password;
         $mail->addAddress($to_id);
         $mail->Subject = $subject;
-        // $mail->msgHTML($message);
         $mail->IsHTML(true);
-        $mail->Body = "
+        $icount = 0;
+        $mailBody = "
         <html>
-        <head></head>
+        <head>
+            <style>
+                table {
+                    border-collapse: collapse;
+                    width: 100%;
+                }
+            
+                th, td {
+                    border: 1px solid #ddd;
+                    text-align: left;
+                    padding: 8px;
+                    color:black
+                }
+            
+                tr:nth-child(even){background-color: #f2f2f2}
+            
+                th {
+                    background-color: #4CAF50;
+                    color: white;
+                }
+            </style>
+        </head>
         <body>
-            <p>Dear Bapak/Ibu,</p><br>
-            <p>Mohon untuk melakukan approve/reject untuk PO ". $ponum .".</p>
-            <br>https://erp.pilardwijaya.com/<br>
-            <p>Terimakasih,</p>
-            <p>Staff</p>
+            <p>Dear Mr/Ms,</p>
+            Purchase Order Created/Updated, Please Review For Approval <br><br>
+            
+            <table>
+                <thead>                    
+                    <th>No</th>
+                    <th>Material</th>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                </thead>
+            <tbody>
+            ";
+            
+        foreach($prdata as $row){
+          $icount += 1;
+            $quantity = 0;
+            if (strpos($row['quantity'], '.000') !== false) {
+                $quantity = number_format($row['quantity'], 0);
+            }else{
+                $quantity = number_format($row['quantity'], 3);
+            }
+            $mailBody .= "
+            <tr> 
+              
+              <td>".$icount."</td>
+              <td>".$row['material']."</td>
+              <td>".$row['matdesc']."</td>
+              <td style='text-align:right;'>". $quantity. " ". $row['unit'] ." </td>
+              <td style='text-align:right;'>". number_format($row['price'], 2) ." </td>
+            </tr>";  
+        }    
+            
+        $mailBody .= "</tbody></table><br><p>Thanks.</p>
         </body>
         </html>
         ";
+        
+        $headers = "From:" . $email ."\r\n";    
+        $headers .= "Content-type: text/html". "\r\n";
+  
+        $mail->Body = $mailBody;
         if (!$mail->send()) {
             $error = "Mailer Error: " . $mail->ErrorInfo;
-            return $error; 
+            // echo $error; 
         }
         else {
-            return "Email terkirim";
+            // echo "Email terkirim";
         }
     }
 

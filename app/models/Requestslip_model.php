@@ -151,4 +151,119 @@ class Requestslip_model{
       $this->db->query($query2);
       $this->db->execute();
     }
+
+    public function getFirstApproval($creator){
+      $this->db->query("SELECT a.object, a.level, a.creator, a.approval, b.email from t_approval as a inner JOIN t_user as b on a.approval = b.username where object ='RS' and creator = '$creator' order by level asc limit 1");
+      return $this->db->single();
+    }
+
+    public function getMailConfig(){
+      $this->db->query("SELECT * FROM t_email_config limit 1");
+      return $this->db->single();
+    }
+
+    public function sendApprovalNotif($reqnum){
+      $prhead   = $this->getRequestHeader($reqnum);
+      $prdata   = $this->getRequestDetail($reqnum);
+      $approval = $this->getFirstApproval($prhead['createdby']);
+
+      $mailConfig = $this->getMailConfig();
+
+      // echo json_encode($mailConfig);
+
+      $toemail  = $approval['email'];      
+      $email    = $mailConfig['username'];
+      $password = $mailConfig['password'];
+      
+      $to_id = $toemail;
+
+      $subject = 'Request Slip Approval '. $reqnum ;
+      $mail = new PHPMailer;
+      // $mail->FromName = $mailConfig['sender_name'];
+      $mail->FromName = 'Request Slip Approval';
+      $mail->isSMTP();
+      $mail->Host = $mailConfig['host'];
+      $mail->Port = 587;
+      $mail->SMTPSecure = $mailConfig['encryption'];
+      $mail->SMTPAuth = true;
+      $mail->Username = $email;
+      $mail->Password = $password;
+      $mail->addAddress($to_id);
+      $mail->Subject = $subject;
+      $mail->IsHTML(true);
+      $icount = 0;
+      $mailBody = "
+      <html>
+      <head>
+          <style>
+              table {
+                  border-collapse: collapse;
+                  width: 100%;
+              }
+          
+              th, td {
+                  border: 1px solid #ddd;
+                  text-align: left;
+                  padding: 8px;
+                  color:black
+              }
+          
+              tr:nth-child(even){background-color: #f2f2f2}
+          
+              th {
+                  background-color: #4CAF50;
+                  color: white;
+              }
+          </style>
+      </head>
+      <body>
+          <p>Dear Mr/Ms,</p>
+          Request Slip Created/Updated, Please Review For Approval <br><br>
+          
+          <table>
+              <thead>
+                  
+                  <th>No</th>
+                  <th>Material</th>
+                  <th>Description</th>
+                  <th>Quantity</th>
+              </thead>
+          <tbody>
+          ";
+          
+      foreach($prdata as $row){
+        $icount += 1;
+          $quantity = 0;
+          if (strpos($row['quantity'], '.000') !== false) {
+              $quantity = number_format($row['quantity'], 0, ',', '.');
+          }else{
+              $quantity = number_format($row['quantity'], 3, ',', '.');
+          }
+          $mailBody .= "
+          <tr> 
+            
+            <td>".$icount."</td>
+            <td>".$row['material']."</td>
+            <td>".$row['matdesc']."</td>
+            <td style='text-align:right;'>".$quantity. " ". $row['unit'] ." </td>
+          </tr>";  
+      }    
+          
+      $mailBody .= "</tbody></table><br><p>Thanks.</p>
+      </body>
+      </html>
+      ";
+      
+      $headers = "From:" . $email ."\r\n";    
+      $headers .= "Content-type: text/html". "\r\n";
+
+      $mail->Body = $mailBody;
+      if (!$mail->send()) {
+          $error = "Mailer Error: " . $mail->ErrorInfo;
+          // echo $error; 
+      }
+      else {
+          // echo "Email terkirim";
+      }
+  }
 }

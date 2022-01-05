@@ -109,11 +109,16 @@ class Requestslip extends Controller {
 		echo json_encode($data);
     }
 
+    public function testemail($reqnum){
+        $this->model('Requestslip_model')->sendApprovalNotif($reqnum);
+    }
+
     public function save(){
         $nextNumb = $this->model('Pr_model')->getNextNumber('REQ_SLIP');
         if( $this->model('Requestslip_model')->save($_POST, $nextNumb['nextnumb']) > 0 ) {
             $result = ["msg"=>"sukses", $nextNumb];
 
+            $this->model('Requestslip_model')->sendApprovalNotif($nextNumb['nextnumb']);
             $result = array(
                 "msgtype" => "1",
                 "message" => "Request Slip Created",

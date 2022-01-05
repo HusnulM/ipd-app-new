@@ -45,6 +45,7 @@ class Approveslip extends Controller {
     public function approveslip(){
         // $this->model('Requestslip_model')->saveprice($_POST);
         if( $this->model('Approveslip_model')->approverequestslip($_POST['requestnum']) > 0 ) {
+            $this->model('Approveslip_model')->sendApprovalNotif($_POST['requestnum']);
             Flasher::setMessage('Request Slip '. $_POST['requestnum'] .' Approved','','success');
 			header('location: '. BASEURL . '/approveslip');
             exit;			

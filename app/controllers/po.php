@@ -113,6 +113,7 @@ class Po extends Controller{
 			// $result = ["msg"=>"success", "docnum"=>$nextNumb];
 			// echo json_encode($result);
 			// header('location: '. BASEURL . '/po');
+			$this->model('Po_model')->sendApprovalNotif($nextNumb['nextnumb']);
 			$return = array(
 				"msgtype" => "1",
 				"message" => "Purchase Order Created",
