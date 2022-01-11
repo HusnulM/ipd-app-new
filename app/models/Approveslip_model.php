@@ -74,6 +74,33 @@ class Approveslip_model{
         return $this->db->rowCount();
     }
 
+    public function rejectrequestslip($data){
+        $reqnum = $data['requestnum'];
+        $note   = $data['reject-note'];
+
+        $user     = $_SESSION['usr']['user'];
+
+        $prdata = $this->getRequestHeader($reqnum);
+
+        $level    = $this->getApprovalLevel($user,$prdata['createdby'],'');
+        $maxlevel = $this->getMaxApprovalLevel($prdata['createdby'],$user,'');
+
+        $approvestat = 0;
+        $approvestat = $level['level']+1;
+
+        $query = "UPDATE t_request_slip01 set request_status=:request_status, final_approve=:final_approve, is_rejected=:is_rejected, reject_note=:reject_note WHERE requestnum=:requestnum";
+        $this->db->query($query);
+
+        $this->db->bind('requestnum',     $reqnum);
+        $this->db->bind('request_status', '99');
+        $this->db->bind('final_approve',  'Y');
+        $this->db->bind('is_rejected',    'Y');
+        $this->db->bind('reject_note',    $note);
+        $this->db->execute();
+
+        return $this->db->rowCount();
+    }
+
     public function getMailConfig(){
         $this->db->query("SELECT * FROM t_email_config limit 1");
         return $this->db->single();

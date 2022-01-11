@@ -55,4 +55,18 @@ class Approveslip extends Controller {
             exit;	
         }
     }
+
+    public function reject(){
+        // $this->model('Requestslip_model')->saveprice($_POST);
+        if( $this->model('Approveslip_model')->rejectrequestslip($_POST) > 0 ) {
+            // $this->model('Approveslip_model')->sendApprovalNotif($_POST['requestnum']);
+            Flasher::setMessage('Request Slip '. $_POST['requestnum'] .' Rejected','','success');
+			header('location: '. BASEURL . '/approveslip');
+            exit;			
+        }else{
+            Flasher::setMessage('Reject Request Slip Fail','','danger');
+			header('location: '. BASEURL . '/approveslip');
+            exit;	
+        }
+    }
 }
