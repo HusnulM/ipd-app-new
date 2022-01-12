@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 04, 2022 at 05:02 AM
+-- Generation Time: Jan 12, 2022 at 04:34 AM
 -- Server version: 10.4.14-MariaDB
 -- PHP Version: 7.4.9
 
@@ -25,7 +25,7 @@ DELIMITER $$
 --
 -- Procedures
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_GenerateBudgetSummary` (IN `pDeptid` INT, IN `pPeriod` INT, IN `pAmount` DECIMAL(15,2))  BEGIN
+CREATE  PROCEDURE `sp_GenerateBudgetSummary` (IN `pDeptid` INT, IN `pPeriod` INT, IN `pAmount` DECIMAL(15,2))  BEGIN
 	DECLARE cAmount decimal(15,2);    
     DECLARE rCount int;
     
@@ -40,7 +40,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_GenerateBudgetSummary` (IN `pDep
     END IF;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_InventoryStock` (IN `pMaterial` VARCHAR(70), IN `pQuantity` DECIMAL(15,3), IN `pMvt` VARCHAR(10), IN `pUnit` VARCHAR(10), IN `pWhs` VARCHAR(11))  NO SQL
+CREATE  PROCEDURE `sp_InventoryStock` (IN `pMaterial` VARCHAR(70), IN `pQuantity` DECIMAL(15,3), IN `pMvt` VARCHAR(10), IN `pUnit` VARCHAR(10), IN `pWhs` VARCHAR(11))  NO SQL
 BEGIN
 	DECLARE currentqty decimal(15,2) DEFAULT 0;
     DECLARE _currentqty decimal(15,2) DEFAULT 0;
@@ -59,7 +59,7 @@ BEGIN
     end if;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_IssuingBudget` (IN `pDeptid` INT, IN `pPeriod` INT, IN `pAmount` DECIMAL(15,2), IN `pUserid` VARCHAR(50), IN `pRefnum` VARCHAR(10), IN `pRefitem` INT)  BEGIN
+CREATE  PROCEDURE `sp_IssuingBudget` (IN `pDeptid` INT, IN `pPeriod` INT, IN `pAmount` DECIMAL(15,2), IN `pUserid` VARCHAR(50), IN `pRefnum` VARCHAR(10), IN `pRefitem` INT)  BEGIN
 	DECLARE cAmount decimal(15,2);
     DECLARE iAmount decimal(15,2);
     
@@ -73,7 +73,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_IssuingBudget` (IN `pDeptid` INT
     END IF;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_NextNriv` (IN `pObject` TEXT)  BEGIN
+CREATE  PROCEDURE `sp_NextNriv` (IN `pObject` TEXT)  BEGIN
 
 	DECLARE nextnumb bigint DEFAULT 0;
     
@@ -89,7 +89,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_NextNriv` (IN `pObject` TEXT)  B
     
  END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ResetData` ()  BEGIN
+CREATE  PROCEDURE `sp_ResetData` ()  BEGIN
 	TRUNCATE t_pr01;
     TRUNCATE t_pr02;
     TRUNCATE t_inventory;
@@ -103,7 +103,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ResetData` ()  BEGIN
     UPDATE t_nriv set currentnum = '' WHERE object in('INVENTORY','PR');
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_TriggerMovement` (IN `pMaterial` VARCHAR(70), IN `pUnit` VARCHAR(15), IN `pQuantity` DECIMAL(15,3), IN `pPonum` VARCHAR(12), IN `pPoitem` INT, IN `pWarehouse` VARCHAR(10), IN `pMvt` INT(10))  NO SQL
+CREATE  PROCEDURE `sp_TriggerMovement` (IN `pMaterial` VARCHAR(70), IN `pUnit` VARCHAR(15), IN `pQuantity` DECIMAL(15,3), IN `pPonum` VARCHAR(12), IN `pPoitem` INT, IN `pWarehouse` VARCHAR(10), IN `pMvt` INT(10))  NO SQL
 BEGIN
 	if pMvt = '101' THEN
     call sp_InventoryStock(pMaterial, pQuantity, pMvt,pUnit,pWarehouse);
@@ -111,7 +111,7 @@ BEGIN
     END if;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateGRPOStatus` (IN `pPonum` VARCHAR(15), IN `pPoitem` INT, IN `pGrqty` DECIMAL(15,3))  NO SQL
+CREATE  PROCEDURE `sp_UpdateGRPOStatus` (IN `pPonum` VARCHAR(15), IN `pPoitem` INT, IN `pGrqty` DECIMAL(15,3))  NO SQL
 BEGIN
 	DECLARE totalgr decimal(15,3);
     DECLARE qtypo decimal(15,3);
@@ -128,7 +128,7 @@ BEGIN
         end if;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestSlipStatus` (IN `pReqnum` VARCHAR(15), IN `pReqitem` INT)  BEGIN
+CREATE  PROCEDURE `sp_UpdateRequestSlipStatus` (IN `pReqnum` VARCHAR(15), IN `pReqitem` INT)  BEGIN
 	DECLARE prQty decimal(15,3);
     DECLARE poQty decimal(15,3);
     SELECT quantity into prQty from t_request_slip02 where requestnum = pReqnum and request_item = pReqitem;
@@ -139,7 +139,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestSlipStatus` (IN `pR
     END IF;  
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateStock` (IN `pMaterial` VARCHAR(70), IN `pDept` INT, IN `pQuantity` DECIMAL(15,3), IN `pMvt` VARCHAR(5), IN `pUnit` VARCHAR(5))  BEGIN
+CREATE  PROCEDURE `sp_UpdateStock` (IN `pMaterial` VARCHAR(70), IN `pDept` INT, IN `pQuantity` DECIMAL(15,3), IN `pMvt` VARCHAR(5), IN `pUnit` VARCHAR(5))  BEGIN
 	DECLARE currentqty decimal(15,2) DEFAULT 0;
     DECLARE _currentqty decimal(15,2) DEFAULT 0;
     
@@ -159,7 +159,7 @@ END$$
 --
 -- Functions
 --
-CREATE DEFINER=`root`@`localhost` FUNCTION `fGetApproveDatePR` (`pPrnum` VARCHAR(20)) RETURNS VARCHAR(50) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci BEGIN
+CREATE  FUNCTION `fGetApproveDatePR` (`pPrnum` VARCHAR(20)) RETURNS VARCHAR(50) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci BEGIN
     DECLARE hasil VARCHAR(50);
 	
     SET hasil = (SELECT approvedate from t_pr02 where prnum = pPrnum and final_approve = 'X' and approvestat not in('5','1') LIMIT 1);
@@ -167,7 +167,7 @@ CREATE DEFINER=`root`@`localhost` FUNCTION `fGetApproveDatePR` (`pPrnum` VARCHAR
 	RETURN (hasil);
 END$$
 
-CREATE DEFINER=`root`@`localhost` FUNCTION `fGetDepatment` (`pId` INT) RETURNS VARCHAR(50) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci BEGIN
+CREATE  FUNCTION `fGetDepatment` (`pId` INT) RETURNS VARCHAR(50) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci BEGIN
     DECLARE hasil VARCHAR(50);
 	
     SET hasil = (SELECT department from t_department where id = pId);
@@ -175,7 +175,7 @@ CREATE DEFINER=`root`@`localhost` FUNCTION `fGetDepatment` (`pId` INT) RETURNS V
 	RETURN (hasil);
 END$$
 
-CREATE DEFINER=`root`@`localhost` FUNCTION `fGetUserDepartment` (`puserName` VARCHAR(50)) RETURNS VARCHAR(50) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci NO SQL
+CREATE  FUNCTION `fGetUserDepartment` (`puserName` VARCHAR(50)) RETURNS VARCHAR(50) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci NO SQL
 BEGIN
     DECLARE hasil VARCHAR(20);
 	
@@ -184,7 +184,7 @@ BEGIN
 	RETURN (hasil);
 END$$
 
-CREATE DEFINER=`root`@`localhost` FUNCTION `fGetUserName` (`pUser` VARCHAR(50)) RETURNS VARCHAR(50) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci BEGIN
+CREATE  FUNCTION `fGetUserName` (`pUser` VARCHAR(50)) RETURNS VARCHAR(50) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci BEGIN
     DECLARE hasil VARCHAR(50);
 	
     SET hasil = (SELECT nama from t_user where username = pUser);
@@ -303,7 +303,8 @@ INSERT INTO `t_budget` (`id`, `deptid`, `budget_period`, `amount`, `currency`, `
 (3, 3, 2021, '5500000.00', 'PHP', '1', 'sys-admin', '2021-11-02 00:00:00'),
 (4, 1, 2021, '100000000.00', 'PHP', '1', 'sys-admin', '2021-11-02 00:00:00'),
 (5, 2, 2021, '9000000.00', 'PHP', '1', 'sys-admin', '2021-11-02 00:00:00'),
-(6, 3, 2021, '9000000.00', 'PHP', '1', 'sys-admin', '2021-11-02 00:00:00');
+(6, 3, 2021, '9000000.00', 'PHP', '1', 'sys-admin', '2021-11-02 00:00:00'),
+(7, 1, 2022, '999999.00', 'PHP', '1', 'sys-admin', '2022-01-04 00:00:00');
 
 --
 -- Triggers `t_budget`
@@ -355,7 +356,8 @@ INSERT INTO `t_budget_history` (`id`, `deptid`, `budget_period`, `amount`, `budg
 (17, 3, 2021, '9000000.00', 'C', 'Budget Allocation', NULL, NULL, '2021-11-02', 'sys-admin'),
 (18, 1, 2021, '20004.75', 'D', 'Budget Issuing', '1000000004', 1, '2021-11-03', 'sys-admin'),
 (19, 1, 2021, '4000.95', 'D', 'Budget Issuing', '1000000011', 1, '2021-11-04', 'sys-admin'),
-(20, 1, 2021, '1000.74', 'D', 'Budget Issuing', '1000000011', 2, '2021-11-04', 'sys-admin');
+(20, 1, 2021, '1000.74', 'D', 'Budget Issuing', '1000000011', 2, '2021-11-04', 'sys-admin'),
+(21, 1, 2022, '999999.00', 'C', 'Budget Allocation', NULL, NULL, '2022-01-04', 'sys-admin');
 
 -- --------------------------------------------------------
 
@@ -377,6 +379,7 @@ CREATE TABLE `t_budget_summary` (
 
 INSERT INTO `t_budget_summary` (`department`, `budget_period`, `amount`, `issuing_amount`, `budget_status`) VALUES
 (1, 2021, '99868980.61', '131019.39', '1'),
+(1, 2022, '999999.00', '0.00', '1'),
 (2, 2021, '8956995.90', '43004.10', '1'),
 (3, 2021, '9000000.00', '0.00', '1');
 
@@ -477,6 +480,30 @@ CREATE TABLE `t_dept_section` (
   `sectionid` int(11) NOT NULL,
   `deskripsi` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `t_email_config`
+--
+
+CREATE TABLE `t_email_config` (
+  `driver` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `host` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `port` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `encryption` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sender_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sender_email` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `t_email_config`
+--
+
+INSERT INTO `t_email_config` (`driver`, `host`, `port`, `encryption`, `username`, `password`, `sender_name`, `sender_email`) VALUES
+('smtp', 'smtp.gmail.com', '587', 'tls', 'to3kangketik@gmail.com', 'S@turnus', 'System-Info', 'to3kangketik@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -676,6 +703,7 @@ INSERT INTO `t_material` (`material`, `brand`, `matdesc`, `supplier`, `mattype`,
 ('PART01', 'YAMAHA', 'Part01 Testing', 'YAMAHADO', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '4000.95', 'PART01-ic_home.png', NULL, '2021-08-15 11:08:12', 'sys-admin'),
 ('PART02', 'YAMAHA', 'Part02 Testing', 'YAMAHADO', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '9999.50', 'PART02-user.ico', NULL, '2021-08-15 11:08:20', 'sys-admin'),
 ('PART03', 'HONDA', 'Test Part With Image', 'HONDA', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '100.00', 'PART03-home.PNG', NULL, '2021-11-04 05:11:11', 'sys-admin'),
+('PART04', 'Honda', 'Testing', 'Test', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '29000.00', 'PART04-', NULL, '2022-01-04 01:01:34', 'sys-admin'),
 ('YPART-01', 'HONDA', 'PART HONDA 1010', 'HONDAAA', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '1000.74', 'YPART-01-home.PNG', NULL, '2021-10-24 11:10:34', 'sys-admin');
 
 --
@@ -716,6 +744,7 @@ INSERT INTO `t_material2` (`material`, `altuom`, `convalt`, `baseuom`, `convbase
 ('PART006', 'PC', '1.00', 'PC', '1.00', '2021-11-04 11:11:59', 'sys-admin'),
 ('PART02', 'PC', '1.00', 'PC', '1.00', '2021-08-15 11:08:20', 'sys-admin'),
 ('PART03', 'PC', '1.00', 'PC', '1.00', '2021-11-04 05:11:11', 'sys-admin'),
+('PART04', 'PC', '1.00', 'PC', '1.00', '2022-01-04 01:01:34', 'sys-admin'),
 ('YPART-01', 'PC', '1.00', 'PC', '1.00', '2021-10-24 11:10:34', 'sys-admin');
 
 -- --------------------------------------------------------
@@ -804,7 +833,11 @@ INSERT INTO `t_menus` (`id`, `menu`, `route`, `type`, `icon`, `menugroup`, `grou
 (38, 'Submit Request for PO', 'requestslip/submitpo', 'parent', '', 2, NULL, NULL, '2021-12-19 00:00:00', 'sys-admin'),
 (39, 'Approve Request Slip', 'approveslip', 'parent', '', 2, NULL, 6, '2021-12-22 00:00:00', 'sys-admin'),
 (40, 'Receipt Purchase Order', 'grpo', 'parent', '', 2, NULL, 8, '2021-12-26 00:00:00', 'sys-admin'),
-(41, 'Approve Purchase Order', 'approvepo', 'parent', '', 2, NULL, 7, '2021-12-26 00:00:00', 'sys-admin');
+(41, 'Approve Purchase Order', 'approvepo', 'parent', '', 2, NULL, 7, '2021-12-26 00:00:00', 'sys-admin'),
+(42, 'Report Purchase Order', 'reportpo', 'parent', '', 3, NULL, 6, '2022-01-04 00:00:00', 'sys-admin'),
+(43, 'Report Receipt Purchase Order', 'reportgrpo', 'parent', '', 3, NULL, 7, '2022-01-04 00:00:00', 'sys-admin'),
+(44, 'Material Price Order History', 'materialprice', 'parent', '', 3, NULL, 8, '2022-01-04 00:00:00', 'sys-admin'),
+(45, 'Report Request Slip', 'reportslip', 'parent', '', 3, NULL, NULL, '2022-01-12 00:00:00', 'sys-admin');
 
 -- --------------------------------------------------------
 
@@ -917,7 +950,7 @@ INSERT INTO `t_nriv` (`object`, `fromnum`, `tonumber`, `currentnum`) VALUES
 ('GRPO', '5000000000', '5999999999', '5000000015'),
 ('INVENTORY', '2000000000', '2999999999', '2000000009'),
 ('PR', '1000000000', '1999999999', '1000000013'),
-('REQ_SLIP', '3000000000', '3999999999', '3000000013'),
+('REQ_SLIP', '3000000000', '3999999999', '3000000019'),
 ('SUPPLIER', '2000000000', '2999999999', '2000000004');
 
 -- --------------------------------------------------------
@@ -938,6 +971,7 @@ CREATE TABLE `t_po01` (
   `appby` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `final_approve` varchar(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'N',
   `is_rejected` varchar(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'N',
+  `reject_note` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `completed` varchar(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `warehouse` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `createdon` datetime DEFAULT NULL,
@@ -948,14 +982,20 @@ CREATE TABLE `t_po01` (
 -- Dumping data for table `t_po01`
 --
 
-INSERT INTO `t_po01` (`ponum`, `ext_ponum`, `potype`, `podat`, `vendor`, `note`, `currency`, `approvestat`, `appby`, `final_approve`, `is_rejected`, `completed`, `warehouse`, `createdon`, `createdby`) VALUES
-('100000', '100000', NULL, '2021-12-24', '2000000000', 'PO 1 slip 3000000001', 'PHP', '1', NULL, 'Y', 'N', NULL, NULL, '2021-12-24 09:12:25', 'sys-admin'),
-('100001', '100001', NULL, '2021-12-24', '2000000000', 'PO 2 slip 3000000001', 'PHP', '1', NULL, 'Y', 'N', NULL, NULL, '2021-12-24 09:12:56', 'sys-admin'),
-('100003', '100003', NULL, '2021-12-26', '2000000000', 'Testing PO Full CYcle', 'PHP', '1', NULL, 'Y', 'N', NULL, NULL, '2021-12-26 09:12:51', 'sys-admin'),
-('100004', '100004', NULL, '2021-12-26', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'Y', 'N', NULL, NULL, '2021-12-26 09:12:23', 'sys-admin'),
-('100009', '100009', NULL, '2021-12-28', '2000000000', 'Test', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, '2021-12-28 09:12:32', 'sys-admin'),
-('190000', '190000', NULL, '2022-01-03', '2000000000', 'Test PO', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, '2022-01-03 02:01:36', 'sys-admin'),
-('190001', '190001', NULL, '2022-01-03', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, '2022-01-03 02:01:16', 'sys-admin');
+INSERT INTO `t_po01` (`ponum`, `ext_ponum`, `potype`, `podat`, `vendor`, `note`, `currency`, `approvestat`, `appby`, `final_approve`, `is_rejected`, `reject_note`, `completed`, `warehouse`, `createdon`, `createdby`) VALUES
+('100000', '100000', NULL, '2021-12-24', '2000000000', 'PO 1 slip 3000000001', 'PHP', '1', NULL, 'Y', 'N', NULL, NULL, NULL, '2021-12-24 09:12:25', 'sys-admin'),
+('100001', '100001', NULL, '2021-12-24', '2000000000', 'PO 2 slip 3000000001', 'PHP', '1', NULL, 'Y', 'N', NULL, NULL, NULL, '2021-12-24 09:12:56', 'sys-admin'),
+('100003', '100003', NULL, '2021-12-26', '2000000000', 'Testing PO Full CYcle', 'PHP', '1', NULL, 'Y', 'N', NULL, NULL, NULL, '2021-12-26 09:12:51', 'sys-admin'),
+('100004', '100004', NULL, '2021-12-26', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'Y', 'N', NULL, NULL, NULL, '2021-12-26 09:12:23', 'sys-admin'),
+('100009', '100009', NULL, '2021-12-28', '2000000000', 'Test', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2021-12-28 09:12:32', 'sys-admin'),
+('190000', '190000', NULL, '2022-01-03', '2000000000', 'Test PO', 'PHP', '99', 'sys-admin', 'Y', 'Y', 'Test Reject PO', NULL, NULL, '2022-01-03 02:01:36', 'sys-admin'),
+('190001', '190001', NULL, '2022-01-03', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-03 02:01:16', 'sys-admin'),
+('900000', '900000', NULL, '2022-01-04', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, NULL, '2022-01-04 01:01:02', 'sys-admin'),
+('900005', '900005', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, NULL, '2022-01-05 10:01:14', 'sys-admin'),
+('900006', '900006', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, NULL, '2022-01-05 10:01:00', 'sys-admin'),
+('900007', '900007', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, NULL, '2022-01-05 10:01:42', 'sys-admin'),
+('900008', '900008', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, NULL, '2022-01-05 10:01:48', 'sys-admin'),
+('900009', '900009', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, NULL, '2022-01-05 10:01:40', 'sys-admin');
 
 --
 -- Triggers `t_po01`
@@ -1012,7 +1052,19 @@ INSERT INTO `t_po02` (`ponum`, `poitem`, `material`, `matdesc`, `quantity`, `uni
 ('100009', 3, 'PART01', 'Part01 Testing', '500.000', 'PC', '66.00', NULL, NULL, '500.000', '3000000008', 3, 'X', 'Y', NULL, '1', NULL, NULL, NULL, '2021-12-28', 'sys-admin'),
 ('190000', 1, 'PART006', 'Test Part With Image', '1500.000', 'PC', '100.00', NULL, NULL, '0.000', '3000000001', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-03', 'sys-admin'),
 ('190001', 1, 'PART005', 'Test Part Image', '100.000', 'PC', '100.00', NULL, NULL, '0.000', '3000000004', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-03', 'sys-admin'),
-('190001', 2, 'PART006', 'Test Part With Image', '2000.000', 'PC', '99.00', NULL, NULL, '0.000', '3000000004', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-03', 'sys-admin');
+('190001', 2, 'PART006', 'Test Part With Image', '2000.000', 'PC', '99.00', NULL, NULL, '0.000', '3000000004', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-03', 'sys-admin'),
+('900000', 1, 'PART03', 'Test Part With Image', '800.000', 'PC', '450.00', NULL, NULL, '0.000', '3000000007', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-04', 'sys-admin'),
+('900000', 2, 'YPART-01', 'PART HONDA 1010', '900.000', 'PC', '900.00', NULL, NULL, '0.000', '3000000007', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-04', 'sys-admin'),
+('900005', 1, 'PART005', 'Test Part Image', '4000.000', 'PC', '100.00', NULL, NULL, '0.000', '3000000005', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
+('900005', 2, 'PART006', 'Test Part With Image', '3000.000', 'PC', '300.00', NULL, NULL, '0.000', '3000000005', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
+('900006', 1, 'PART005', 'Test Part Image', '600.000', 'PC', '100.00', NULL, NULL, '0.000', '3000000006', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
+('900006', 2, 'PART006', 'Test Part With Image', '8000.000', 'PC', '300.00', NULL, NULL, '0.000', '3000000006', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
+('900007', 1, 'PART005', 'Test Part Image', '100.000', 'PC', '900.00', NULL, NULL, '0.000', '3000000009', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
+('900007', 2, 'PART006', 'Test Part With Image', '200.000', 'PC', '800.00', NULL, NULL, '0.000', '3000000009', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
+('900008', 1, 'PART005', 'Test Part Image', '100.000', 'PC', '550.00', NULL, NULL, '0.000', '3000000011', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
+('900008', 2, 'PART006', 'Test Part With Image', '200.000', 'PC', '8.77', NULL, NULL, '0.000', '3000000011', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
+('900009', 1, 'PART005', 'Test Part Image', '3.000', 'PC', '5000.00', NULL, NULL, '0.000', '3000000012', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
+('900009', 2, 'PART006', 'Test Part With Image', '3.000', 'PC', '6500.00', NULL, NULL, '0.000', '3000000012', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin');
 
 --
 -- Triggers `t_po02`
@@ -1044,7 +1096,14 @@ CREATE TABLE `t_po03` (
 
 INSERT INTO `t_po03` (`id`, `ponum`, `efile`) VALUES
 (3, '190001', '190001-Invoice Vimec 07122021.pdf'),
-(4, '190001', '190001-Invoice Vimec 31122021.pdf');
+(4, '190001', '190001-Invoice Vimec 31122021.pdf'),
+(5, '900000', '900000-Invoice Vimec 07122021.pdf'),
+(6, '900000', '900000-Invoice Vimec 31122021.pdf'),
+(7, '900005', '900005-Invoice Vimec 31122021.pdf'),
+(8, '900006', '900006-Invoice Vimec 31122021.pdf'),
+(9, '900007', '900007-Invoice Vimec 31122021.pdf'),
+(10, '900008', '900008-'),
+(11, '900009', '900009-');
 
 -- --------------------------------------------------------
 
@@ -1262,6 +1321,8 @@ CREATE TABLE `t_request_slip01` (
   `request_note` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `request_status` int(11) NOT NULL DEFAULT 1,
   `final_approve` varchar(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
+  `is_rejected` varchar(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'N',
+  `reject_note` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `deptid` int(11) NOT NULL,
   `efile` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `createdon` date NOT NULL,
@@ -1272,19 +1333,25 @@ CREATE TABLE `t_request_slip01` (
 -- Dumping data for table `t_request_slip01`
 --
 
-INSERT INTO `t_request_slip01` (`requestnum`, `request_date`, `request_by`, `request_note`, `request_status`, `final_approve`, `deptid`, `efile`, `createdon`, `createdby`) VALUES
-('3000000001', '2021-12-18', 'Administrator', 'Test Request Slip', 3, 'Y', 1, NULL, '2021-12-18', 'sys-admin'),
-('3000000002', '2021-12-19', 'Administrator', 'Request Slip 2', 3, 'Y', 1, NULL, '2021-12-19', 'sys-admin'),
-('3000000003', '2021-12-19', 'Administrator', 'Test Slip', 3, 'Y', 1, NULL, '2021-12-19', 'sys-admin'),
-('3000000004', '2021-12-21', 'Administrator', 'Test Slip', 3, 'Y', 1, '3000000004-WSU - IPD System.docx', '2021-12-21', 'sys-admin'),
-('3000000005', '2021-12-21', 'Administrator', 'Test Slip with attachment', 3, 'Y', 1, '3000000005-WSU - IPD System.docx', '2021-12-21', 'sys-admin'),
-('3000000006', '2021-12-21', 'Administrator', 'Test Request Slip', 3, 'Y', 1, '3000000006-WSU - IPD System.docx', '2021-12-21', 'sys-admin'),
-('3000000007', '2021-12-21', 'Administrator', 'Test Slip with attachment', 3, 'Y', 1, '3000000007-TemplateReportGI.xlsx', '2021-12-21', 'sys-admin'),
-('3000000008', '2021-12-22', 'Administrator', 'Test Slip', 3, 'Y', 1, '3000000008-Testing BAPI DP PO.docx', '2021-12-22', 'sys-admin'),
-('3000000009', '2021-12-23', 'Administrator', 'Test Multiple Attachment', 3, 'Y', 1, NULL, '2021-12-23', 'sys-admin'),
-('3000000010', '2021-12-23', 'Administrator', 'Test Multiple Attachment', 3, 'Y', 1, NULL, '2021-12-23', 'sys-admin'),
-('3000000011', '2021-12-23', 'Administrator', 'Reqeust with multiple attachment', 3, 'Y', 1, NULL, '2021-12-23', 'sys-admin'),
-('3000000012', '2021-12-23', 'Administrator', 'Test Request Slip', 3, 'Y', 1, NULL, '2021-12-23', 'sys-admin');
+INSERT INTO `t_request_slip01` (`requestnum`, `request_date`, `request_by`, `request_note`, `request_status`, `final_approve`, `is_rejected`, `reject_note`, `deptid`, `efile`, `createdon`, `createdby`) VALUES
+('3000000001', '2021-12-18', 'Administrator', 'Test Request Slip', 3, 'Y', 'N', NULL, 1, NULL, '2021-12-18', 'sys-admin'),
+('3000000002', '2021-12-19', 'Administrator', 'Request Slip 2', 3, 'Y', 'N', NULL, 1, NULL, '2021-12-19', 'sys-admin'),
+('3000000003', '2021-12-19', 'Administrator', 'Test Slip', 3, 'Y', 'N', NULL, 1, NULL, '2021-12-19', 'sys-admin'),
+('3000000004', '2021-12-21', 'Administrator', 'Test Slip', 3, 'Y', 'N', NULL, 1, '3000000004-WSU - IPD System.docx', '2021-12-21', 'sys-admin'),
+('3000000005', '2021-12-21', 'Administrator', 'Test Slip with attachment', 3, 'Y', 'N', NULL, 1, '3000000005-WSU - IPD System.docx', '2021-12-21', 'sys-admin'),
+('3000000006', '2021-12-21', 'Administrator', 'Test Request Slip', 3, 'Y', 'N', NULL, 1, '3000000006-WSU - IPD System.docx', '2021-12-21', 'sys-admin'),
+('3000000007', '2021-12-21', 'Administrator', 'Test Slip with attachment', 3, 'Y', 'N', NULL, 1, '3000000007-TemplateReportGI.xlsx', '2021-12-21', 'sys-admin'),
+('3000000008', '2021-12-22', 'Administrator', 'Test Slip', 3, 'Y', 'N', NULL, 1, '3000000008-Testing BAPI DP PO.docx', '2021-12-22', 'sys-admin'),
+('3000000009', '2021-12-23', 'Administrator', 'Test Multiple Attachment', 3, 'Y', 'N', NULL, 1, NULL, '2021-12-23', 'sys-admin'),
+('3000000010', '2021-12-23', 'Administrator', 'Test Multiple Attachment', 3, 'Y', 'N', NULL, 1, NULL, '2021-12-23', 'sys-admin'),
+('3000000011', '2021-12-23', 'Administrator', 'Reqeust with multiple attachment', 3, 'Y', 'N', NULL, 1, NULL, '2021-12-23', 'sys-admin'),
+('3000000012', '2021-12-23', 'Administrator', 'Test Request Slip', 3, 'Y', 'N', NULL, 1, NULL, '2021-12-23', 'sys-admin'),
+('3000000013', '2022-01-04', 'Administrator', 'Test Request Slip', 2, 'N', 'N', NULL, 1, NULL, '2022-01-04', 'sys-admin'),
+('3000000014', '2022-01-05', 'Administrator', 'Test Request Slip', 2, 'N', 'N', NULL, 1, NULL, '2022-01-05', 'sys-admin'),
+('3000000015', '2022-01-05', 'Administrator', 'Test Request Slip', 99, 'Y', 'Y', 'Testing Reject Slip', 1, NULL, '2022-01-05', 'sys-admin'),
+('3000000016', '2022-01-05', 'Administrator', 'Test Request Slip', 99, 'Y', 'Y', 'harga terlalu mahal', 1, NULL, '2022-01-05', 'sys-admin'),
+('3000000017', '2022-01-05', 'Administrator', 'Test Request Slip', 99, 'Y', 'Y', 'ganti vendor, vendor sudah tidak bisa supply', 1, NULL, '2022-01-05', 'sys-admin'),
+('3000000018', '2022-01-05', 'Administrator', 'Test Request Slip', 2, 'N', 'N', NULL, 1, NULL, '2022-01-05', 'sys-admin');
 
 -- --------------------------------------------------------
 
@@ -1320,23 +1387,39 @@ INSERT INTO `t_request_slip02` (`requestnum`, `request_item`, `material`, `quant
 ('3000000003', 2, 'PART03', '9000.000', 'PC', '100.00', 1, 'Y', '2021-12-19', 'sys-admin'),
 ('3000000004', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'Y', '2021-12-21', 'sys-admin'),
 ('3000000004', 2, 'PART006', '2000.000', 'PC', '0.00', 1, 'Y', '2021-12-21', 'sys-admin'),
-('3000000005', 1, 'PART005', '4000.000', 'PC', '0.00', 1, 'N', '2021-12-21', 'sys-admin'),
-('3000000005', 2, 'PART006', '3000.000', 'PC', '0.00', 1, 'N', '2021-12-21', 'sys-admin'),
-('3000000006', 1, 'PART005', '600.000', 'PC', '0.00', 1, 'N', '2021-12-21', 'sys-admin'),
-('3000000006', 2, 'PART006', '8000.000', 'PC', '0.00', 1, 'N', '2021-12-21', 'sys-admin'),
-('3000000007', 1, 'PART03', '800.000', 'PC', '0.00', 1, 'N', '2021-12-21', 'sys-admin'),
-('3000000007', 2, 'YPART-01', '900.000', 'PC', '0.00', 1, 'N', '2021-12-21', 'sys-admin'),
+('3000000005', 1, 'PART005', '4000.000', 'PC', '0.00', 1, 'Y', '2021-12-21', 'sys-admin'),
+('3000000005', 2, 'PART006', '3000.000', 'PC', '0.00', 1, 'Y', '2021-12-21', 'sys-admin'),
+('3000000006', 1, 'PART005', '600.000', 'PC', '0.00', 1, 'Y', '2021-12-21', 'sys-admin'),
+('3000000006', 2, 'PART006', '8000.000', 'PC', '0.00', 1, 'Y', '2021-12-21', 'sys-admin'),
+('3000000007', 1, 'PART03', '800.000', 'PC', '0.00', 1, 'Y', '2021-12-21', 'sys-admin'),
+('3000000007', 2, 'YPART-01', '900.000', 'PC', '0.00', 1, 'Y', '2021-12-21', 'sys-admin'),
 ('3000000008', 1, 'PART005', '700.000', 'PC', '0.00', 1, 'Y', '2021-12-22', 'sys-admin'),
 ('3000000008', 2, 'PART006', '600.000', 'PC', '0.00', 1, 'Y', '2021-12-22', 'sys-admin'),
 ('3000000008', 3, 'PART01', '500.000', 'PC', '0.00', 1, 'Y', '2021-12-22', 'sys-admin'),
-('3000000009', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'N', '2021-12-23', 'sys-admin'),
-('3000000009', 2, 'PART006', '200.000', 'PC', '0.00', 1, 'N', '2021-12-23', 'sys-admin'),
+('3000000009', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'Y', '2021-12-23', 'sys-admin'),
+('3000000009', 2, 'PART006', '200.000', 'PC', '0.00', 1, 'Y', '2021-12-23', 'sys-admin'),
 ('3000000010', 1, 'PART005', '600.000', 'PC', '0.00', 1, 'N', '2021-12-23', 'sys-admin'),
 ('3000000010', 2, 'PART006', '900.000', 'PC', '0.00', 1, 'N', '2021-12-23', 'sys-admin'),
-('3000000011', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'N', '2021-12-23', 'sys-admin'),
-('3000000011', 2, 'PART006', '200.000', 'PC', '0.00', 1, 'N', '2021-12-23', 'sys-admin'),
-('3000000012', 1, 'PART005', '3.000', 'PC', '0.00', 1, 'N', '2021-12-23', 'sys-admin'),
-('3000000012', 2, 'PART006', '3.000', 'PC', '0.00', 1, 'N', '2021-12-23', 'sys-admin');
+('3000000011', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'Y', '2021-12-23', 'sys-admin'),
+('3000000011', 2, 'PART006', '200.000', 'PC', '0.00', 1, 'Y', '2021-12-23', 'sys-admin'),
+('3000000012', 1, 'PART005', '3.000', 'PC', '0.00', 1, 'Y', '2021-12-23', 'sys-admin'),
+('3000000012', 2, 'PART006', '3.000', 'PC', '0.00', 1, 'Y', '2021-12-23', 'sys-admin'),
+('3000000013', 1, 'PART01', '150.000', 'PC', '0.00', 1, 'N', '2022-01-04', 'sys-admin'),
+('3000000013', 2, 'PART02', '130.000', 'PC', '0.00', 1, 'N', '2022-01-04', 'sys-admin'),
+('3000000013', 3, 'PART03', '170.000', 'PC', '0.00', 1, 'N', '2022-01-04', 'sys-admin'),
+('3000000013', 4, 'PART04', '165.000', 'PC', '0.00', 1, 'N', '2022-01-04', 'sys-admin'),
+('3000000014', 1, 'PART005', '900.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000014', 2, 'PART006', '400.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000015', 1, 'PART006', '50.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000015', 2, 'PART01', '100.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000015', 3, 'PART02', '150.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000016', 1, 'PART005', '60.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000016', 2, 'PART006', '600.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000016', 3, 'PART01', '560.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000017', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000017', 2, 'PART006', '200.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000018', 1, 'PART006', '4.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000018', 2, 'PART005', '3.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin');
 
 -- --------------------------------------------------------
 
@@ -1363,7 +1446,13 @@ INSERT INTO `t_request_slip03` (`id`, `requestnum`, `efile`) VALUES
 (9, '3000000011', '3000000011-image2.jpg'),
 (10, '3000000011', '3000000011-login-wlp2.jpg'),
 (11, '3000000012', '3000000012-ABAP - CDS.pptx'),
-(12, '3000000012', '3000000012-ZTFI011.XLSX');
+(12, '3000000012', '3000000012-ZTFI011.XLSX'),
+(13, '3000000013', '3000000013-Invoice Vimec 31122021.pdf'),
+(14, '3000000014', '3000000014-Invoice Vimec 31122021.pdf'),
+(15, '3000000015', '3000000015-Invoice Vimec 31122021.pdf'),
+(16, '3000000016', '3000000016-Invoice Vimec 31122021.pdf'),
+(17, '3000000017', '3000000017-'),
+(18, '3000000018', '3000000018-');
 
 -- --------------------------------------------------------
 
@@ -1432,6 +1521,10 @@ INSERT INTO `t_rolemenu` (`roleid`, `menuid`, `createdon`, `createdby`) VALUES
 (1, 39, '2021-12-22 00:00:00', 'sys-admin'),
 (1, 40, '2021-12-26 00:00:00', 'sys-admin'),
 (1, 41, '2021-12-28 00:00:00', 'sys-admin'),
+(1, 42, '2022-01-04 00:00:00', 'sys-admin'),
+(1, 43, '2022-01-04 00:00:00', 'sys-admin'),
+(1, 44, '2022-01-04 00:00:00', 'sys-admin'),
+(1, 45, '2022-01-12 00:00:00', 'sys-admin'),
 (2, 18, '2021-08-17 00:00:00', 'sys-admin'),
 (2, 23, '2021-08-17 00:00:00', 'sys-admin'),
 (2, 39, '2021-12-22 00:00:00', 'sys-admin'),
@@ -1564,6 +1657,22 @@ INSERT INTO `t_role_avtivity` (`roleid`, `menuid`, `activity`, `status`, `create
 (1, 41, 'Delete', 1, '2021-12-28'),
 (1, 41, 'Read', 1, '2021-12-28'),
 (1, 41, 'Update', 1, '2021-12-28'),
+(1, 42, 'Create', 0, '2022-01-04'),
+(1, 42, 'Delete', 0, '2022-01-04'),
+(1, 42, 'Read', 1, '2022-01-04'),
+(1, 42, 'Update', 0, '2022-01-04'),
+(1, 43, 'Create', 0, '2022-01-04'),
+(1, 43, 'Delete', 0, '2022-01-04'),
+(1, 43, 'Read', 1, '2022-01-04'),
+(1, 43, 'Update', 0, '2022-01-04'),
+(1, 44, 'Create', 0, '2022-01-04'),
+(1, 44, 'Delete', 0, '2022-01-04'),
+(1, 44, 'Read', 1, '2022-01-04'),
+(1, 44, 'Update', 0, '2022-01-04'),
+(1, 45, 'Create', 0, '2022-01-12'),
+(1, 45, 'Delete', 0, '2022-01-12'),
+(1, 45, 'Read', 1, '2022-01-12'),
+(1, 45, 'Update', 0, '2022-01-12'),
 (2, 18, 'Create', 1, '2021-08-17'),
 (2, 18, 'Delete', 1, '2021-08-17'),
 (2, 18, 'Read', 1, '2021-08-17'),
@@ -1781,6 +1890,26 @@ CREATE TABLE `v_po01` (
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `v_po02`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_po02` (
+`ponum` varchar(25)
+,`podat` date
+,`month` int(2)
+,`year` int(4)
+,`vendor` varchar(10)
+,`material` varchar(70)
+,`matdesc` varchar(100)
+,`quantity` decimal(15,3)
+,`unit` varchar(10)
+,`price` decimal(15,2)
+,`totalprice` decimal(30,5)
+);
+
+-- --------------------------------------------------------
+
+--
 -- Stand-in structure for view `v_pr004`
 -- (See below for the actual view)
 --
@@ -1821,6 +1950,31 @@ CREATE TABLE `v_pr04` (
 ,`remark` varchar(100)
 ,`createdon` datetime
 ,`createdby` varchar(50)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `v_report_grpo`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_report_grpo` (
+`movement_number` varchar(10)
+,`movement_year` int(11)
+,`movement_item` int(11)
+,`movement_date` date
+,`movement_type` varchar(5)
+,`movement_note` varchar(100)
+,`material` varchar(70)
+,`matdesc` varchar(70)
+,`quantity` decimal(15,3)
+,`unit` varchar(10)
+,`unit_price` decimal(15,2)
+,`totalprice` decimal(15,2)
+,`ponum` varchar(10)
+,`poitem` int(11)
+,`vendor` varchar(10)
+,`supplier_name` varchar(100)
 );
 
 -- --------------------------------------------------------
@@ -1943,7 +2097,7 @@ CREATE TABLE `v_user_role_avtivity` (
 --
 DROP TABLE IF EXISTS `v_material_price_history`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_material_price_history`  AS  select `v_po01`.`month` AS `month`,`v_po01`.`year` AS `year`,`v_po01`.`vendor` AS `vendor`,`v_po01`.`material` AS `material`,sum(`v_po01`.`quantity`) AS `totalqty`,`v_po01`.`unit` AS `unit`,sum(`v_po01`.`price`) AS `total_unitprice`,cast(sum(`v_po01`.`quantity`) * sum(`v_po01`.`quantity`) as decimal(15,2)) AS `totalprice`,cast(sum(`v_po01`.`totalprice`) / sum(`v_po01`.`quantity`) as decimal(15,2)) AS `avg_price` from `v_po01` group by `v_po01`.`month`,`v_po01`.`year`,`v_po01`.`vendor`,`v_po01`.`material`,`v_po01`.`unit` order by `v_po01`.`month`,`v_po01`.`year`,`v_po01`.`vendor`,`v_po01`.`material` ;
+CREATE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_material_price_history`  AS  select `v_po01`.`month` AS `month`,`v_po01`.`year` AS `year`,`v_po01`.`vendor` AS `vendor`,`v_po01`.`material` AS `material`,sum(`v_po01`.`quantity`) AS `totalqty`,`v_po01`.`unit` AS `unit`,sum(`v_po01`.`price`) AS `total_unitprice`,cast(sum(`v_po01`.`quantity`) * sum(`v_po01`.`quantity`) as decimal(15,2)) AS `totalprice`,cast(sum(`v_po01`.`totalprice`) / sum(`v_po01`.`quantity`) as decimal(15,2)) AS `avg_price` from `v_po01` group by `v_po01`.`month`,`v_po01`.`year`,`v_po01`.`vendor`,`v_po01`.`material`,`v_po01`.`unit` order by `v_po01`.`month`,`v_po01`.`year`,`v_po01`.`vendor`,`v_po01`.`material` ;
 
 -- --------------------------------------------------------
 
@@ -1952,7 +2106,16 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_po01`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_po01`  AS  select `a`.`podat` AS `podat`,month(`a`.`podat`) AS `month`,year(`a`.`podat`) AS `year`,`a`.`vendor` AS `vendor`,`b`.`material` AS `material`,`b`.`matdesc` AS `matdesc`,`b`.`quantity` AS `quantity`,`b`.`unit` AS `unit`,`b`.`price` AS `price`,`b`.`quantity` * `b`.`price` AS `totalprice` from (`t_po01` `a` join `t_po02` `b` on(`a`.`ponum` = `b`.`ponum`)) ;
+CREATE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_po01`  AS  select `a`.`podat` AS `podat`,month(`a`.`podat`) AS `month`,year(`a`.`podat`) AS `year`,`a`.`vendor` AS `vendor`,`b`.`material` AS `material`,`b`.`matdesc` AS `matdesc`,`b`.`quantity` AS `quantity`,`b`.`unit` AS `unit`,`b`.`price` AS `price`,`b`.`quantity` * `b`.`price` AS `totalprice` from (`t_po01` `a` join `t_po02` `b` on(`a`.`ponum` = `b`.`ponum`)) ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `v_po02`
+--
+DROP TABLE IF EXISTS `v_po02`;
+
+CREATE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_po02`  AS  select `a`.`ponum` AS `ponum`,`a`.`podat` AS `podat`,month(`a`.`podat`) AS `month`,year(`a`.`podat`) AS `year`,`a`.`vendor` AS `vendor`,`b`.`material` AS `material`,`b`.`matdesc` AS `matdesc`,`b`.`quantity` AS `quantity`,`b`.`unit` AS `unit`,`b`.`price` AS `price`,`b`.`quantity` * `b`.`price` AS `totalprice` from (`t_po01` `a` join `t_po02` `b` on(`a`.`ponum` = `b`.`ponum`)) ;
 
 -- --------------------------------------------------------
 
@@ -1961,7 +2124,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_pr004`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_pr004`  AS  select `a`.`prnum` AS `prnum`,`a`.`pritem` AS `pritem`,`a`.`material` AS `material`,`a`.`matdesc` AS `matdesc`,`a`.`quantity` AS `quantity`,`a`.`unit` AS `unit`,`a`.`price` AS `price`,`a`.`pocreated` AS `pocreated`,`a`.`approvestat` AS `approvestat`,`a`.`approveby` AS `approveby`,`a`.`remark` AS `remark`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby`,`a`.`final_approve` AS `final_approve` from (`t_pr02` `a` left join `t_material` `b` on(`a`.`material` = `b`.`material`)) ;
+CREATE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_pr004`  AS  select `a`.`prnum` AS `prnum`,`a`.`pritem` AS `pritem`,`a`.`material` AS `material`,`a`.`matdesc` AS `matdesc`,`a`.`quantity` AS `quantity`,`a`.`unit` AS `unit`,`a`.`price` AS `price`,`a`.`pocreated` AS `pocreated`,`a`.`approvestat` AS `approvestat`,`a`.`approveby` AS `approveby`,`a`.`remark` AS `remark`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby`,`a`.`final_approve` AS `final_approve` from (`t_pr02` `a` left join `t_material` `b` on(`a`.`material` = `b`.`material`)) ;
 
 -- --------------------------------------------------------
 
@@ -1970,7 +2133,16 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_pr04`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_pr04`  AS  select `a`.`prnum` AS `prnum`,`a`.`pritem` AS `pritem`,`a`.`material` AS `material`,`a`.`matdesc` AS `matdesc`,`a`.`quantity` AS `quantity`,`a`.`unit` AS `unit`,`a`.`price` AS `price`,`a`.`pocreated` AS `pocreated`,`a`.`approvestat` AS `approvestat`,`a`.`approveby` AS `approveby`,`a`.`remark` AS `remark`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby` from (`t_pr02` `a` left join `t_material` `b` on(`a`.`material` = `b`.`material`)) ;
+CREATE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_pr04`  AS  select `a`.`prnum` AS `prnum`,`a`.`pritem` AS `pritem`,`a`.`material` AS `material`,`a`.`matdesc` AS `matdesc`,`a`.`quantity` AS `quantity`,`a`.`unit` AS `unit`,`a`.`price` AS `price`,`a`.`pocreated` AS `pocreated`,`a`.`approvestat` AS `approvestat`,`a`.`approveby` AS `approveby`,`a`.`remark` AS `remark`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby` from (`t_pr02` `a` left join `t_material` `b` on(`a`.`material` = `b`.`material`)) ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `v_report_grpo`
+--
+DROP TABLE IF EXISTS `v_report_grpo`;
+
+CREATE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_report_grpo`  AS  select `a`.`movement_number` AS `movement_number`,`a`.`movement_year` AS `movement_year`,`b`.`movement_item` AS `movement_item`,`a`.`movement_date` AS `movement_date`,`a`.`movement_type` AS `movement_type`,`a`.`movement_note` AS `movement_note`,`b`.`material` AS `material`,`b`.`matdesc` AS `matdesc`,`b`.`quantity` AS `quantity`,`b`.`unit` AS `unit`,`f`.`price` AS `unit_price`,cast(`b`.`quantity` * `f`.`price` as decimal(15,2)) AS `totalprice`,`b`.`ponum` AS `ponum`,`b`.`poitem` AS `poitem`,`c`.`vendor` AS `vendor`,`d`.`supplier_name` AS `supplier_name` from ((((`t_movement_01` `a` join `t_movement_02` `b` on(`a`.`movement_number` = `b`.`movement_number` and `a`.`movement_year` = `b`.`movement_year`)) join `t_po01` `c` on(`c`.`ponum` = `b`.`ponum`)) join `t_supplier` `d` on(`c`.`vendor` = `d`.`supplier_id`)) join `t_po02` `f` on(`b`.`ponum` = `f`.`ponum` and `b`.`poitem` = `f`.`poitem`)) where `a`.`movement_type` = '101' order by `a`.`movement_number`,`a`.`movement_year`,`b`.`movement_item` ;
 
 -- --------------------------------------------------------
 
@@ -1979,7 +2151,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_report_transaction`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_report_transaction`  AS  select `a`.`transactionid` AS `transactionid`,`a`.`prod_date` AS `prod_date`,`a`.`partnumber` AS `partnumber`,`a`.`partmodel` AS `partmodel`,`a`.`serial_no` AS `serial_no`,`a`.`createdon` AS `createdon`,`b`.`process1` AS `process1`,`b`.`process2` AS `process2`,`b`.`process3` AS `process3`,`b`.`process4` AS `process4`,`b`.`process5` AS `process5`,`b`.`process6` AS `process6`,`b`.`process7` AS `process7`,`b`.`process8` AS `process8`,`b`.`process9` AS `process9`,`b`.`lastprocess` AS `lastprocess`,`b`.`error_process` AS `error_process`,`b`.`defect_name` AS `defect_name`,`b`.`location` AS `location`,`b`.`cause` AS `cause`,`b`.`action` AS `action`,`c`.`process1` AS `repair1`,`c`.`process2` AS `repair2`,`c`.`process3` AS `repair3`,`c`.`process4` AS `repair4`,`c`.`process5` AS `repair5`,`c`.`process6` AS `repair6`,`c`.`remark` AS `remark`,`c`.`defect_name` AS `repair_defect`,`c`.`location` AS `repair_location`,`c`.`action` AS `repair_action`,`c`.`lastrepair` AS `lastrepair` from ((`t_ipd_forms` `a` left join `t_ipd_process` `b` on(`a`.`transactionid` = `b`.`transactionid`)) left join `t_ipd_repair` `c` on(`a`.`transactionid` = `c`.`transactionid`)) order by `a`.`transactionid`,`a`.`serial_no`,`a`.`partnumber` ;
+CREATE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_report_transaction`  AS  select `a`.`transactionid` AS `transactionid`,`a`.`prod_date` AS `prod_date`,`a`.`partnumber` AS `partnumber`,`a`.`partmodel` AS `partmodel`,`a`.`serial_no` AS `serial_no`,`a`.`createdon` AS `createdon`,`b`.`process1` AS `process1`,`b`.`process2` AS `process2`,`b`.`process3` AS `process3`,`b`.`process4` AS `process4`,`b`.`process5` AS `process5`,`b`.`process6` AS `process6`,`b`.`process7` AS `process7`,`b`.`process8` AS `process8`,`b`.`process9` AS `process9`,`b`.`lastprocess` AS `lastprocess`,`b`.`error_process` AS `error_process`,`b`.`defect_name` AS `defect_name`,`b`.`location` AS `location`,`b`.`cause` AS `cause`,`b`.`action` AS `action`,`c`.`process1` AS `repair1`,`c`.`process2` AS `repair2`,`c`.`process3` AS `repair3`,`c`.`process4` AS `repair4`,`c`.`process5` AS `repair5`,`c`.`process6` AS `repair6`,`c`.`remark` AS `remark`,`c`.`defect_name` AS `repair_defect`,`c`.`location` AS `repair_location`,`c`.`action` AS `repair_action`,`c`.`lastrepair` AS `lastrepair` from ((`t_ipd_forms` `a` left join `t_ipd_process` `b` on(`a`.`transactionid` = `b`.`transactionid`)) left join `t_ipd_repair` `c` on(`a`.`transactionid` = `c`.`transactionid`)) order by `a`.`transactionid`,`a`.`serial_no`,`a`.`partnumber` ;
 
 -- --------------------------------------------------------
 
@@ -1988,7 +2160,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_user`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_user`  AS  select `a`.`username` AS `username`,`a`.`password` AS `password`,`a`.`nama` AS `nama`,`a`.`department` AS `department`,`a`.`createdby` AS `createdby`,`a`.`createdon` AS `createdon`,`b`.`department` AS `deptname` from (`t_user` `a` left join `t_department` `b` on(`a`.`department` = `b`.`id`)) ;
+CREATE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_user`  AS  select `a`.`username` AS `username`,`a`.`password` AS `password`,`a`.`nama` AS `nama`,`a`.`department` AS `department`,`a`.`createdby` AS `createdby`,`a`.`createdon` AS `createdon`,`b`.`department` AS `deptname` from (`t_user` `a` left join `t_department` `b` on(`a`.`department` = `b`.`id`)) ;
 
 -- --------------------------------------------------------
 
@@ -1997,7 +2169,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_user_menu`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_user_menu`  AS  select `a`.`username` AS `username`,`b`.`roleid` AS `roleid`,`f`.`rolename` AS `rolename`,`c`.`menuid` AS `menuid`,`d`.`id` AS `id`,`d`.`menu` AS `menu`,`d`.`route` AS `route`,`d`.`type` AS `type`,`d`.`menugroup` AS `menugroup`,`d`.`grouping` AS `grouping`,`d`.`icon` AS `icon`,`d`.`createdon` AS `createdon`,`d`.`createdby` AS `createdby`,`d`.`_sorting` AS `_sorting` from ((((`t_user` `a` join `t_user_role` `b` on(`a`.`username` = `b`.`username`)) join `t_rolemenu` `c` on(`c`.`roleid` = `b`.`roleid`)) join `t_menus` `d` on(`d`.`id` = `c`.`menuid`)) join `t_role` `f` on(`f`.`roleid` = `b`.`roleid`)) ;
+CREATE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_user_menu`  AS  select `a`.`username` AS `username`,`b`.`roleid` AS `roleid`,`f`.`rolename` AS `rolename`,`c`.`menuid` AS `menuid`,`d`.`id` AS `id`,`d`.`menu` AS `menu`,`d`.`route` AS `route`,`d`.`type` AS `type`,`d`.`menugroup` AS `menugroup`,`d`.`grouping` AS `grouping`,`d`.`icon` AS `icon`,`d`.`createdon` AS `createdon`,`d`.`createdby` AS `createdby`,`d`.`_sorting` AS `_sorting` from ((((`t_user` `a` join `t_user_role` `b` on(`a`.`username` = `b`.`username`)) join `t_rolemenu` `c` on(`c`.`roleid` = `b`.`roleid`)) join `t_menus` `d` on(`d`.`id` = `c`.`menuid`)) join `t_role` `f` on(`f`.`roleid` = `b`.`roleid`)) ;
 
 -- --------------------------------------------------------
 
@@ -2006,7 +2178,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_user_menugroup`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_user_menugroup`  AS  select `a`.`menugroup` AS `menugroup`,`a`.`description` AS `description`,`a`.`icon` AS `icon`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby`,`b`.`username` AS `username` from (`t_menugroups` `a` join `v_user_menu` `b` on(`a`.`menugroup` = `b`.`menugroup`)) order by `a`.`menugroup` ;
+CREATE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_user_menugroup`  AS  select `a`.`menugroup` AS `menugroup`,`a`.`description` AS `description`,`a`.`icon` AS `icon`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby`,`b`.`username` AS `username` from (`t_menugroups` `a` join `v_user_menu` `b` on(`a`.`menugroup` = `b`.`menugroup`)) order by `a`.`menugroup` ;
 
 -- --------------------------------------------------------
 
@@ -2015,7 +2187,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_user_role_avtivity`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_user_role_avtivity`  AS  select `a`.`roleid` AS `roleid`,`a`.`menuid` AS `menuid`,`a`.`activity` AS `activity`,`a`.`status` AS `status`,`a`.`createdon` AS `createdon`,`b`.`route` AS `route`,`b`.`menu` AS `menu`,`c`.`username` AS `username`,`d`.`rolename` AS `rolename` from (((`t_role_avtivity` `a` join `t_menus` `b` on(`a`.`menuid` = `b`.`id`)) join `t_user_role` `c` on(`a`.`roleid` = `c`.`roleid`)) join `t_role` `d` on(`a`.`roleid` = `d`.`roleid`)) order by `c`.`username`,`d`.`rolename` ;
+CREATE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_user_role_avtivity`  AS  select `a`.`roleid` AS `roleid`,`a`.`menuid` AS `menuid`,`a`.`activity` AS `activity`,`a`.`status` AS `status`,`a`.`createdon` AS `createdon`,`b`.`route` AS `route`,`b`.`menu` AS `menu`,`c`.`username` AS `username`,`d`.`rolename` AS `rolename` from (((`t_role_avtivity` `a` join `t_menus` `b` on(`a`.`menuid` = `b`.`id`)) join `t_user_role` `c` on(`a`.`roleid` = `c`.`roleid`)) join `t_role` `d` on(`a`.`roleid` = `d`.`roleid`)) order by `c`.`username`,`d`.`rolename` ;
 
 --
 -- Indexes for dumped tables
@@ -2086,6 +2258,12 @@ ALTER TABLE `t_defectlist`
 --
 ALTER TABLE `t_department`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `t_email_config`
+--
+ALTER TABLE `t_email_config`
+  ADD PRIMARY KEY (`driver`,`host`,`port`,`username`,`sender_name`,`sender_email`);
 
 --
 -- Indexes for table `t_inventory`
@@ -2331,13 +2509,13 @@ ALTER TABLE `t_actionlist`
 -- AUTO_INCREMENT for table `t_budget`
 --
 ALTER TABLE `t_budget`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `t_budget_history`
 --
 ALTER TABLE `t_budget_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `t_causelist`
@@ -2373,13 +2551,13 @@ ALTER TABLE `t_menugroups`
 -- AUTO_INCREMENT for table `t_menus`
 --
 ALTER TABLE `t_menus`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `t_po03`
 --
 ALTER TABLE `t_po03`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `t_process_sequence`
@@ -2391,7 +2569,7 @@ ALTER TABLE `t_process_sequence`
 -- AUTO_INCREMENT for table `t_request_slip03`
 --
 ALTER TABLE `t_request_slip03`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `t_role`

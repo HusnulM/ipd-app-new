@@ -25,11 +25,12 @@
                                     <tr>
                                         <th></th>
                                         <th></th>
-                                        <th>PO Number</th>
-                                        <th>PO Date</th>
+                                        <th>Slip Number</th>
+                                        <th>Slip Date</th>
+                                        <th>Department</th>
                                         <th>Note</th>
                                         <th>Reject Note</th>
-                                        <th>Created By</th>
+                                        <th>Request By</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -51,18 +52,18 @@
         $(function(){
             var strdate = "<?= $data['strdate']; ?>";
             var enddate = "<?= $data['enddate']; ?>";
+            var departm = "<?= $data['dept']; ?>";
 
             function format ( d, results ) {
                 console.log(results)
                 var html = '';
                 html = `<table class="table table-bordered table-striped" style="padding-left:50px;width:100%;">
                        <thead>
-                            <th>PO Item</th>
+                            <th>Slip Item</th>
                             <th>Material</th>
                             <th>Description</th>
                             <th>Quantity</th>
                             <th>Unit</th>
-                            <th>Unit Price</th>
                        </thead>
                        <tbody>`;
                 for(var i = 0; i < results.length; i++){
@@ -72,12 +73,11 @@
                     // qty = qty.replaceAll('.',',');
                     html +=`
                        <tr>
-                            <td style="text-align:right;"> `+ results[i].poitem +` </td> 
+                            <td style="text-align:right;"> `+ results[i].request_item +` </td> 
                             <td> `+ results[i].material +` </td>                            
                             <td> `+ results[i].matdesc +` </td>
                             <td style="text-align:right;"> `+ formatNumber(qty) +` </td>
                             <td> `+ results[i].unit +` </td>
-                            <td style="text-align:right;"> `+ formatNumber(results[i].price) +` </td>
                        </tr>
                        `;
                 }
@@ -92,7 +92,7 @@
             }
 
             var table = $('#example').DataTable( {
-                "ajax": base_url+"/reportpo/getheaderdata/"+strdate+"/"+enddate,
+                "ajax": base_url+"/reportslip/getheaderdata/"+strdate+"/"+enddate+"/"+departm,
                 "columns": [
                     {
                         "className":      'details-control',
@@ -101,12 +101,13 @@
                         "defaultContent": ''
                     },
                     {"defaultContent": "<button class='btn btn-primary btn-xs'>Print</button>"},
-                    { "data": "ponum" },
-                    { "data": "podat" },
-                    { "data": "note" },
+                    { "data": "requestnum" },
+                    { "data": "request_date" },
+                    { "data": "department" },
+                    { "data": "request_note" },
                     { "data": "reject_note" },
-                    { "data": "createdby" },
-                    { "data": "approvestat" }
+                    { "data": "request_by" },
+                    { "data": "request_status" }
                 ],
                 "order": [[1, 'asc']],
                 "pageLength": 50,
@@ -119,7 +120,7 @@
                 selected_data = table.row($(this).closest('tr')).data();
                 console.log(selected_data);
 
-                window.open(base_url+"/reportpo/printpo/"+selected_data.ponum, '_blank');
+                window.open(base_url+"/reportslip/pringslip/"+selected_data.requestnum, '_blank');
             } ); 
             
             // Add event listener for opening and closing details
@@ -130,7 +131,7 @@
                 // console.log(row.data())
                 var d = row.data();
                 $.ajax({
-                    url: base_url+'/reportpo/getpodetail/'+d.ponum,
+                    url: base_url+'/reportslip/getdetaildata/'+d.requestnum,
                     type: 'GET',
                     dataType: 'json',
                     cache:false,

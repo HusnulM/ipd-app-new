@@ -5,7 +5,7 @@
                 <div class="card">
                     <div class="header">
                         <h2>
-                            Report Purchase Request Order
+                            <?= $data['menu']; ?>
                         </h2>
                     </div>
                     <div class="body">
@@ -29,13 +29,13 @@
                                     </div>    
                                 </div>                                    
                             </div>
-                            <!-- <div class="row clearfix">
+                            <div class="row clearfix">
                                 <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
                                     <div class="form-group">
                                         <div class="form-line">
                                             <label for="department">Department</label>
                                             <select name="department" id="department" class="form-control">
-                                                <option value="0">All Department</option>
+                                                <option value="ALL">All Department</option>
                                                 <?php if(sizeof($data['departmentuser']) > 0) : ?>
                                                     <?php foreach($data['departmentuser'] as $row) : ?>
                                                         <option value="<?= $row['department']; ?>"><?= $row['deptname']; ?></option>
@@ -49,7 +49,7 @@
                                         </div>
                                     </div>    
                                 </div>
-                            </div> -->
+                            </div>
 
                             <div class="row clearfix">
                                 <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
@@ -70,7 +70,7 @@
     <script>
         $(function(){
             $('#btn-process').on('click', function(){
-                window.location.href = base_url+'/reportpo/display/'+$('#strdate').val()+'/'+$('#enddate').val();
+                window.location.href = base_url+'/reportslip/display/'+$('#strdate').val()+'/'+$('#enddate').val()+'/'+$('#department').val();
             });
         })
     </script>

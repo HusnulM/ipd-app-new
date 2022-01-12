@@ -68,15 +68,29 @@ class Approvepo extends Controller{
 		}
     }
 
-    public function reject($ponum){
-        if( $this->model('Approvepo_model')->approvepo($ponum) > 0 ) {
-			Flasher::setMessage('PO', $ponum . ' Approved' ,'success');
+    // public function reject($ponum){
+    //     if( $this->model('Approvepo_model')->approvepo($ponum) > 0 ) {
+	// 		Flasher::setMessage('PO', $ponum . ' Approved' ,'success');
+	// 		header('location: '. BASEURL . '/approvepo');
+	// 		exit;			
+	// 	}else{
+	// 		Flasher::setMessage('Approve PO', $ponum . ' Failed','danger');
+	// 		header('location: '. BASEURL . '/approvepo');
+	// 		exit;	
+	// 	}
+    // }
+
+	public function reject(){
+        // $this->model('Requestslip_model')->saveprice($_POST);
+        if( $this->model('Approvepo_model')->rejectpo($_POST) > 0 ) {
+            // $this->model('Approveslip_model')->sendApprovalNotif($_POST['requestnum']);
+            Flasher::setMessage('Purchase order '. $_POST['ponum'] .' Rejected','','success');
 			header('location: '. BASEURL . '/approvepo');
-			exit;			
-		}else{
-			Flasher::setMessage('Approve PO', $ponum . ' Failed','danger');
+            exit;			
+        }else{
+            Flasher::setMessage('Reject Purchase Order Fail','','danger');
 			header('location: '. BASEURL . '/approvepo');
-			exit;	
-		}
+            exit;	
+        }
     }
 }

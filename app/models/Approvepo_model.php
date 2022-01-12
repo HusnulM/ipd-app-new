@@ -73,4 +73,32 @@ class Approvepo_model{
 
         return $this->db->rowCount();
     }
+
+    public function rejectpo($data){
+        $reqnum = $data['ponum'];
+        $note   = $data['reject-note'];
+
+        $user     = $_SESSION['usr']['user'];
+
+        // $prdata = $this->getRequestHeader($reqnum);
+
+        // $level    = $this->getApprovalLevel($user,$prdata['createdby'],'');
+        // $maxlevel = $this->getMaxApprovalLevel($prdata['createdby'],$user,'');
+
+        // $approvestat = 0;
+        // $approvestat = $level['level']+1;
+
+        $query = "UPDATE t_po01 set approvestat=:approvestat,appby=:appby,final_approve=:final_approve,is_rejected=:is_rejected,reject_note=:reject_note WHERE ponum=:ponum";
+        $this->db->query($query);
+
+        $this->db->bind('ponum',         $reqnum);
+        $this->db->bind('approvestat',   '99');
+        $this->db->bind('appby',         $user);
+        $this->db->bind('final_approve', 'Y');
+        $this->db->bind('is_rejected',   'Y');
+        $this->db->bind('reject_note',   $note);
+        $this->db->execute();
+
+        return $this->db->rowCount();
+    }
 }

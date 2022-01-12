@@ -243,20 +243,23 @@
     <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-md" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="rejectModalText">Reject Note</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <textarea name="reject-note" id="reject-note" cols="30" rows="5" class="form-control"></textarea>
+                <form action="<?= BASEURL; ?>/approvepo/reject" method="POST">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="rejectModalText">Reject Note</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <textarea name="reject-note" id="reject-note" cols="30" rows="5" class="form-control"></textarea>
+                                <input type="hidden" name="ponum" id="_requestnum">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
-                    <button type="button" class="btn btn-primary waves-effect" data-dismiss="modal">SAVE REJECTION</button>
-                </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
+                        <button type="submit" class="btn btn-primary waves-effect" >SAVE REJECTION</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -311,6 +314,8 @@
             });
 
             $('#btn-reject').on('click', function(){
+                var _data = $(this).data();
+                $("#_requestnum").val(_data.ponum);
                 $('#rejectModal').modal('show');
             });
 
