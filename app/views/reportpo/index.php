@@ -29,6 +29,29 @@
                                     </div>    
                                 </div>                                    
                             </div>
+                            <div class="row clearfix">
+                                <div class="col-lg-6">
+                                    <label for="poselect"></label>
+                                    <select name="poselect" id="poselect" class="form-control">
+                                        <option value="ALL">All</option>
+                                        <option value="O">Open PO Only</option>
+                                        <option value="R">Already Receipt Only</option>
+                                    </select>
+                                </div>
+                                <!-- <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <input type="checkbox" id="basic_checkbox_2" class="filled-in form-control"/>
+                                        <label for="basic_checkbox_2">Open PO Only</label>
+                                    </div>  
+                                </div>
+                                <div class="col-lg-3">
+                                    <div class="form-group">
+                                        <input type="checkbox" id="basic_checkbox_3" class="filled-in form-control"/>
+                                        <label for="basic_checkbox_3">Already Receipt Only</label>
+                                    </div>  
+                                </div> -->
+                            </div>
+                                
                             <!-- <div class="row clearfix">
                                 <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
                                     <div class="form-group">
@@ -69,8 +92,18 @@
     <script src="<?= BASEURL; ?>/plugins/sweetalert/sweetalert.min.js"></script>
     <script>
         $(function(){
+            // var _openpo = 'N';
+            
+            // $('#basic_checkbox_2').on('change', function(){
+            //     if(_openpo === 'N'){
+            //         _openpo = 'Y'
+            //     }else{
+            //         _openpo = 'N'
+            //     }
+            // });
+
             $('#btn-process').on('click', function(){
-                window.location.href = base_url+'/reportpo/display/'+$('#strdate').val()+'/'+$('#enddate').val();
+                window.location.href = base_url+'/reportpo/display/'+$('#strdate').val()+'/'+$('#enddate').val()+'/'+$('#poselect').val();
             });
         })
     </script>

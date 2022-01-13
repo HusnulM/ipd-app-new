@@ -59,6 +59,7 @@ class Approvepo extends Controller{
     public function approve($ponum){
         if( $this->model('Approvepo_model')->approvepo($ponum) > 0 ) {
 			Flasher::setMessage('PO', $ponum . ' Approved' ,'success');
+			$this->model('Approvepo_model')->sendApprovalNotif($ponum);
 			header('location: '. BASEURL . '/approvepo');
 			exit;			
 		}else{

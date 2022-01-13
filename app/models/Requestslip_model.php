@@ -250,9 +250,11 @@ class Requestslip_model{
       }    
           
       $mailBody .= "</tbody></table><br><p>Thanks.</p>
-      </body>
-      </html>
-      ";
+            <br><a href='". BASEURL ."/approveslip' target='_blank'>". BASEURL ."</a>";
+            $mailBody .= "
+            </body>
+            </html>
+            ";
       
       $headers = "From:" . $email ."\r\n";    
       $headers .= "Content-type: text/html". "\r\n";

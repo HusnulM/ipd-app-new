@@ -34,12 +34,12 @@ class Po_model{
     }
 
     public function getOrderHeaderPrint($ponum){
-        $this->db->query("SELECT a.*, b.namavendor, b.alamat, fGetApproveDatePO(a.ponum) as 'appdate' FROM t_po01 as a inner join t_vendor as b on a.vendor = b.vendor WHERE ponum = '$ponum'");
+        $this->db->query("SELECT a.*, b.supplier_name,b.email,b.address FROM t_po01 as a inner join t_supplier as b on a.vendor = b.supplier_id WHERE a.ponum = '$ponum'");
         return $this->db->single();
     }
 
     public function getPOitemPrint($ponum){
-        $this->db->query("SELECT a.*, b.partnumber FROM t_po02 as a left join t_material as b on a.material = b.material WHERE a.ponum = '$ponum'");
+        $this->db->query("SELECT * FROM t_po02 WHERE ponum = '$ponum'");
         return $this->db->resultSet();
     }
     
@@ -47,11 +47,6 @@ class Po_model{
         $user = $_SESSION['usr']['user'];
         $dept = $_SESSION['usr']['department'];
 
-        // if($_SESSION['usr']['userlevel'] === 'SysAdmin'){
-        //     $this->db->query("SELECT * FROM v_po001 WHERE approvestat in('0','1')");
-        // }else{
-        //     $this->db->query("SELECT * FROM v_po001 WHERE approvestat in('0','1') and createdby = '$user'");
-        // }
         $this->db->query("SELECT distinct `a`.`ponum` AS `ponum`,`a`.`ext_ponum` AS `ext_ponum`,`a`.`potype` AS `potype`,`a`.`podat` AS `podat`,`a`.`vendor` AS `vendor`,`a`.`note` AS `note`,`a`.`currency` AS `currency`,`a`.`appby` AS `appby`,`a`.`completed` AS `completed`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby`,`b`.`supplier_name` AS `supplier_name`,`fGetUserDepartment`(`a`.`createdby`) AS `department`,`a`.`warehouse` AS `warehouse` from ((`t_po01` `a` join `t_supplier` `b` on(`a`.`vendor` = `b`.`supplier_id`))) where `a`.`final_approve` = 'N' and a.createdby = '$user'");
         return $this->db->resultSet();
     }
@@ -278,6 +273,8 @@ class Po_model{
         }    
             
         $mailBody .= "</tbody></table><br><p>Thanks.</p>
+        <br><a href='". BASEURL ."/approvepo' target='_blank'>". BASEURL ."</a>";
+        $mailBody .= "
         </body>
         </html>
         ";

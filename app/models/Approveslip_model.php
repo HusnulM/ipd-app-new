@@ -194,6 +194,8 @@ class Approveslip_model{
             }    
                 
             $mailBody .= "</tbody></table><br><p>Thanks.</p>
+            <br><a href='". BASEURL ."/approveslip' target='_blank'>". BASEURL ."</a>";
+            $mailBody .= "
             </body>
             </html>
             ";

@@ -231,4 +231,8 @@ class Po extends Controller{
 	public function deletepoitem($ponum,$poitem){
 		$this->model('Po_model')->deletepoitem($ponum,$poitem);
 	}
+
+	public function testemail($ponum){
+		$this->model('Po_model')->sendApprovalNotif($ponum);
+	}
 }

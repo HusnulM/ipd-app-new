@@ -51,6 +51,9 @@
         $(function(){
             var strdate = "<?= $data['strdate']; ?>";
             var enddate = "<?= $data['enddate']; ?>";
+            var openpo  = "<?= $data['openpo']; ?>";
+
+            // alert(openpo)
 
             function format ( d, results ) {
                 console.log(results)
@@ -61,14 +64,22 @@
                             <th>Material</th>
                             <th>Description</th>
                             <th>Quantity</th>
+                            <th>Receipt Qty</th>
+                            <th>Open Qty</th>
                             <th>Unit</th>
                             <th>Unit Price</th>
                        </thead>
                        <tbody>`;
                 for(var i = 0; i < results.length; i++){
                     var qty = '';
+                    var receiptqty = '';
+                    var openQty = 0;
                     qty = results[i].quantity;
+                    receiptqty = results[i].grqty;
                     qty = qty.replaceAll('.000','');
+                    receiptqty = receiptqty.replaceAll('.000','');
+                    
+                    openQty = (qty*1)-(receiptqty*1);
                     // qty = qty.replaceAll('.',',');
                     html +=`
                        <tr>
@@ -76,6 +87,10 @@
                             <td> `+ results[i].material +` </td>                            
                             <td> `+ results[i].matdesc +` </td>
                             <td style="text-align:right;"> `+ formatNumber(qty) +` </td>
+                            
+                            <td style="text-align:right;"> `+ formatNumber(receiptqty) +` </td>
+                            
+                            <td style="text-align:right;"> `+ formatNumber(openQty) +` </td>
                             <td> `+ results[i].unit +` </td>
                             <td style="text-align:right;"> `+ formatNumber(results[i].price) +` </td>
                        </tr>
@@ -92,7 +107,7 @@
             }
 
             var table = $('#example').DataTable( {
-                "ajax": base_url+"/reportpo/getheaderdata/"+strdate+"/"+enddate,
+                "ajax": base_url+"/reportpo/getheaderdata/"+strdate+"/"+enddate+"/"+openpo,
                 "columns": [
                     {
                         "className":      'details-control',
@@ -106,7 +121,19 @@
                     { "data": "note" },
                     { "data": "reject_note" },
                     { "data": "createdby" },
-                    { "data": "approvestat" }
+                    { "data": "approvestat", 
+                        "render": function (data, type, row) {
+                            console.log(data)
+                            if (data == 99) {
+                                return 'Rejected';
+                            }else if (data == 1) {
+                                return 'Open';
+                            }
+                            else {
+                                return 'Approved';
+                            }
+                        }
+                    }
                 ],
                 "order": [[1, 'asc']],
                 "pageLength": 50,
@@ -119,7 +146,7 @@
                 selected_data = table.row($(this).closest('tr')).data();
                 console.log(selected_data);
 
-                window.open(base_url+"/reportpo/printpo/"+selected_data.ponum, '_blank');
+                window.open(base_url+"/reportpo/printpo/data?ponum="+selected_data.ponum, '_blank');
             } ); 
             
             // Add event listener for opening and closing details

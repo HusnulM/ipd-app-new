@@ -47,6 +47,17 @@ class Reportslip extends Controller{
         } 
     }
 
+	public function printslip($params){
+		$url    = parse_url($_SERVER['REQUEST_URI']);
+        $data   = parse_str($url['query'], $params);
+		$reqnum = $params['reqnum'];
+
+		$data['header']   = $this->model('Requestslip_model')->getRequestHeader($reqnum);
+		$data['poitem']   = $this->model('Requestslip_model')->getRequestDetail($reqnum);
+		$this->view('requestslip/printoutslip', $data);
+		// echo json_encode($data['poitem']);
+	}
+
     public function getheaderdata($strdate, $enddate, $dept){
 		$data['data'] = $this->model('Reportslip_model')->getHeader($strdate, $enddate, $dept);
 		echo json_encode($data);

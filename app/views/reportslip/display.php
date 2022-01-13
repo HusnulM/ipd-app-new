@@ -107,7 +107,20 @@
                     { "data": "request_note" },
                     { "data": "reject_note" },
                     { "data": "request_by" },
-                    { "data": "request_status" }
+                    // { "data": "request_status"}
+                    { "data": "request_status", 
+                        "render": function (data, type, row) {
+                            console.log(data)
+                            if (data == 99) {
+                                return 'Rejected';
+                            }else if (data == 1) {
+                                return 'Open';
+                            }
+                            else {
+                                return 'Approved';
+                            }
+                        }
+                    }
                 ],
                 "order": [[1, 'asc']],
                 "pageLength": 50,
@@ -120,7 +133,7 @@
                 selected_data = table.row($(this).closest('tr')).data();
                 console.log(selected_data);
 
-                window.open(base_url+"/reportslip/pringslip/"+selected_data.requestnum, '_blank');
+                window.open(base_url+"/reportslip/printslip/data?reqnum="+selected_data.requestnum, '_blank');
             } ); 
             
             // Add event listener for opening and closing details

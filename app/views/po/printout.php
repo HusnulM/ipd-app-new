@@ -33,18 +33,18 @@
              $left = 10;
       
              //header AWSI-F-PUR-01-04
-             $this->Cell(5,4,'',0,1);
-             $this->SetFont("Arial", "", 8);
-             $this->SetX($left); $this->Cell(0, 5, 'FORM-PO-V1', 0, 1,'R');
-             $this->Ln(20);
+            // $this->Cell(5,4,'',0,1);
+            // $this->SetFont("Arial", "", 8);
+            // $this->SetX($left); $this->Cell(0, 5, 'FORM-PO-V1', 0, 1,'R');
+            // $this->Ln(20);
             $this->Cell(10,7,'',0,1);
             $this->SetFont("Arial", "B", 16);
             $this->SetX($left); $this->Cell(0, 10, 'PURCHASE ORDER', 0, 1,'C');
-            $this->Image('aws-logo.png',480,50,90,80);
+            // $this->Image('aws-logo.png',480,50,90,80);
 
             // $this->SetFont("Arial", "B", 16);
             // $this->SetX($left); $this->Cell(0, 10, 'PURCHASE ORDER', 0, 1,'C');
-            $this->Ln(60);
+            $this->Ln(30);
             $this->SetFont('Arial','B',10);
             $this->Cell(10,7,'',0,1);    
             $this->Cell(100,5,'PO Date',0);
@@ -53,7 +53,7 @@
 
             $this->Cell(100,5,'Purchase Order',0);
             $this->Cell(5,5,':',0);
-            $this->Cell(72,5,$this->hdata['ext_ponum'],0);
+            $this->Cell(72,5,$this->hdata['ponum'],0);
             
             $this->Ln(10);
             $this->Cell(10,7,'',0,1);
@@ -69,7 +69,7 @@
             $this->Cell(10,7,'',0,1);
             $this->Cell(100,5,'Vendor',0);
             $this->Cell(5,5,':',0);
-            $this->Cell(200,5,$this->hdata['namavendor'],0);
+            $this->Cell(200,5,$this->hdata['supplier_name'],0);
 
             // $this->Cell(100,7,'NPWP NO',0);
             // $this->Cell(5,5,':',0);
@@ -80,12 +80,12 @@
             $this->Cell(100,15,'Vendor Address',0);
             $this->Cell(5,15,':',0);
             $this->SetX($left += 125);
-            $this->MultiCell(200,15,$this->hdata['alamat'],0);
+            $this->MultiCell(200,15,$this->hdata['address'],0);
             // $this->Cell(40,15,'','B',1,'L');
 
             
             
-            $this->Ln(10);
+            $this->Ln(20);
              $h = 20;
              $left = 10;
              $top = 80;
@@ -115,107 +115,45 @@
              $no = 1; $this->SetFillColor(255);
              foreach ($this->data as $baris) {
                 $qty = 0;
-                if (strpos($baris['quantity'], '.00') !== false){
+                if (strpos($baris['quantity'], '.000') !== false){
                     $qty = number_format($baris['quantity'],0,",",".");
                 }else{
-                    $qty = number_format($baris['quantity'],2,",",".");
+                    $qty = number_format($baris['quantity'],3,",",".");
                 }
                  $this->Row(
                      array($no++,
                     //  $baris['ponum'],
                      $baris['material'],
-                     $baris['partnumber'],
+                     $baris['matdesc'],
                      $qty,
                      $baris['unit'],
-                     number_format($baris['price'],0,",","."),
-                     number_format(($baris['price'] * $baris['quantity']),0,",","."),
+                     number_format($baris['price'],2),
+                     number_format(($baris['price'] * $baris['quantity']),2),
                      
                  ));
 
                  $totalharga = $totalharga + ($baris['price']*$baris['quantity']);
-                 $discount   = $discount + $baris['discount'];
-                 $totalprice = (($baris['price']*$baris['quantity'])-$baris['discount']);
-                 $taxvalue   = $taxvalue + ($totalprice*($baris['ppn']/100));
+                //  $discount   = $discount + $baris['discount'];
+                //  $totalprice = (($baris['price']*$baris['quantity'])-$baris['discount']);
+                //  $taxvalue   = $taxvalue + ($totalprice*($baris['ppn']/100));
              }
             // $ppn = 0;
             // $ppn = $totalharga*($this->hdata['ppn']/100);
 
             $this->SetFont('Arial','B',8);
-            $this->Cell(440,15,'JUMLAH','L',0,'R');
-            $this->Cell(30,15,'Rp.','',0,'R');
-            $this->Cell(70,15,number_format($totalharga,0,",","."),'R',1,'R');
-            $this->Cell(440,15,'DISCOUNT','L',0,'R');
-            $this->Cell(30,15,'Rp.','',0,'R');
-            $this->Cell(70,15,number_format($discount,0,",","."),'R',1,'R');
-            $this->Cell(440,15,'PPN','L',0,'R');
-            $this->Cell(30,15,'Rp.','',0,'R');
-            $this->Cell(70,15,number_format($taxvalue,0,",","."),'R',1,'R');
-            $this->Cell(440,15,'TOTAL','L,B',0,'R');
-            $this->Cell(30,15,'Rp.','B',0,'R');
-            $this->Cell(70,15,number_format($totalharga+$taxvalue-$discount,0,",","."),'R,B',1,'R');
+            $this->Cell(440,15,'GRAND TOTAL','L,B',0,'R');
+            $this->Cell(30,15,'','B,R',0,'R');
+            $this->Cell(70,15,number_format($totalharga,2),'R,B',1,'R');
+            // $this->Cell(440,15,'DISCOUNT','L',0,'R');
+            // $this->Cell(30,15,'Rp.','',0,'R');
+            // $this->Cell(70,15,number_format($discount,0,",","."),'R',1,'R');
+            // $this->Cell(440,15,'PPN','L',0,'R');
+            // $this->Cell(30,15,'Rp.','',0,'R');
+            // $this->Cell(70,15,number_format($taxvalue,0,",","."),'R',1,'R');
+            // $this->Cell(440,15,'TOTAL','L,B',0,'R');
+            // $this->Cell(30,15,'Rp.','B',0,'R');
+            // $this->Cell(70,15,number_format($totalharga+$taxvalue-$discount,0,",","."),'R,B',1,'R');
 
-            $check = "";
-            $checkbox_size = 5; 
-            $ori_font_family = 'Arial'; 
-            $ori_font_size = '10'; 
-            $ori_font_style = '';
-
-            // Note
-            // $this->Cell(540,15,'NOTE: ABOVE PURCHASED PRODUCT (S) REQUIRE (S) FOLLOWING DOCUMENTS :','L,R',1,'C');
-            // $this->SetFont('ZapfDingbats','', 8);
-            // $this->Cell(15,15, chr(111), 'L', 0, 'R');
-            // $this->SetFont('Arial','B',8);
-            // $this->Cell(60,15, "TEST REPORT", '', 0, 'R');
-            // $this->SetFont('ZapfDingbats','', 8);
-            // $this->Cell(200,15, chr(111), '', 0, 'R');
-            // $this->SetFont('Arial','B',8);
-            // $this->Cell(265,15, "ENVIRONMENTAL CERTIFICATE", 'R', 1, 'L');
-            
-            // $this->SetFont('ZapfDingbats','', 8);
-            // $this->Cell(15,15, chr(111), 'L', 0, 'R');
-            // $this->SetFont('Arial','B',8);
-            // $this->Cell(60,15, "MATERIAL SAFETY DATA SHEET (MSDS)", '', 0, 'L');
-            // $this->SetFont('ZapfDingbats','', 8);
-            // $this->Cell(200,15, chr(111), '', 0, 'R');
-            // $this->SetFont('Arial','B',8);
-            // $this->Cell(265,15, "QUALITY SYSTEM MANAGEMENT CERTIFICATE", 'R', 1, 'L');
-            
-            
-            // $this->SetFont('ZapfDingbats','', 8);
-            // $this->Cell(15,15, chr(111), 'L,B', 0, 'R');
-            // $this->SetFont('Arial','B',8);
-            // $this->Cell(60,15, "PRODUCT CERTIFICATE OF COMPLIANCE", 'B', 0, 'L');
-            // $this->SetFont('ZapfDingbats','', 8);
-            // $this->Cell(200,15, chr(111), 'B', 0, 'R');
-            // $this->SetFont('Arial','B',8);
-            // $this->Cell(265,15, "RoHS", 'B,R', 1, 'L');
-            
-            // $this->Ln(5);
-            // $this->SetFont('Arial','B',10);
-            // $this->Cell(5,15,'','',0,'L');
-            // $this->Cell(15,15,'PRICE','',0,'L');
-            // $this->Cell(90,15,':','',0,'R');
-            // $this->Cell(150,15,$this->hdata['tf_price'],'',1,'L');
-
-            // $this->Cell(5,15,'','',0,'L');
-            // $this->Cell(15,15,'DESTINATION','',0,'L');
-            // $this->Cell(90,15,':','',0,'R');
-            // $this->Cell(150,15,$this->hdata['tf_dest'],'',1,'L');
-
-            // $this->Cell(5,15,'','',0,'L');
-            // $this->Cell(15,15,'SHIPMENT','',0,'L');
-            // $this->Cell(90,15,':','',0,'R');
-            // $this->Cell(150,15,$this->hdata['tf_shipment']. ", " . $this->hdata['tf_shipdate'],'',1,'L');
-
-            // $this->Cell(5,15,'','',0,'L');
-            // $this->Cell(15,15,'PAYMENT','',0,'L');
-            // $this->Cell(90,15,':','',0,'R');
-            // $this->Cell(150,15,$this->hdata['tf_top'],'',1,'L');
-
-            // $this->Cell(5,15,'','',0,'L');
-            // $this->Cell(15,15,'PACKING','',0,'L');
-            // $this->Cell(90,15,':','',0,'R');
-            // $this->Cell(120,15,$this->hdata['tf_packing'],'',1,'L');
             $this->Ln(20);
             $this->SetFont('Arial','B',8);
             $this->Cell(5,15,'','',0,'L');
@@ -227,12 +165,12 @@
             $this->Ln(50);
             $this->Cell(390,15,'','',0,'C');
             $this->SetLineWidth(1);  
-            $this->Cell(140,15,'DIREKTUR','T',0,'C');
+            $this->Cell(140,15,'','T',0,'C');
 
-            $this->Ln(10);
-            $this->Cell(390,15,'','',0,'C');
-            $this->SetLineWidth(1);  
-            $this->Cell(140,15,$this->hdata['appdate'],'',0,'C');
+            // $this->Ln(10);
+            // $this->Cell(390,15,'','',0,'C');
+            // $this->SetLineWidth(1);  
+            // $this->Cell(140,15,"",'',0,'C');
             // $this->Cell(70,15,'','',0,'C');
             // $this->Cell(120,15,'MANAGER PURCHASING','T',1,'C');
             // $this->Cell(270,15,'Menyetujui',1,1,'C');
@@ -376,4 +314,4 @@
       
      $tabel = new FPDF_AutoWrapTable($pdata, $options,$hdata);
      $tabel->printPDF();
-     ?>
+?>

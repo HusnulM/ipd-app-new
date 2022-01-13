@@ -27,7 +27,7 @@ class Reportpo extends Controller{
         }  
 	}
 
-    public function display($strdate, $enddate){
+    public function display($strdate, $enddate, $openpo){
         $check = $this->model('Home_model')->checkUsermenu('reportpo','Read');
         if ($check){
 			$data['title']    = 'Report Purchase Order';
@@ -37,6 +37,7 @@ class Reportpo extends Controller{
             // $data['departmentuser'] = $this->model('Department_model')->getByByUser();
 			$data['strdate'] = $strdate;
 			$data['enddate'] = $enddate;
+			$data['openpo']  = $openpo;
 
 			$this->view('templates/header_a', $data);
 			$this->view('reportpo/display', $data);
@@ -46,8 +47,20 @@ class Reportpo extends Controller{
         } 
     }
 
-	public function getheaderdata($strdate, $enddate){
-		$data['data'] = $this->model('Reportpo_model')->getPOHeader($strdate, $enddate);
+	public function printpo($params){
+		$url = parse_url($_SERVER['REQUEST_URI']);
+        $data = parse_str($url['query'], $params);
+		$ponum = $params['ponum'];
+
+		$data['setting']  = $this->model('Setting_model')->getgensetting();
+		$data['header']   = $this->model('Po_model')->getOrderHeaderPrint($ponum);
+		$data['poitem']   = $this->model('Po_model')->getPOitemPrint($ponum);
+		$this->view('po/printout', $data);
+		// echo json_encode($data['poitem']);
+	}
+
+	public function getheaderdata($strdate, $enddate, $openqty){
+		$data['data'] = $this->model('Reportpo_model')->getPOHeader($strdate, $enddate, $openqty);
 		echo json_encode($data);
 	}
 
