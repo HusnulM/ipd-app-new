@@ -68,4 +68,6 @@ class Reportpo extends Controller{
 		$data = $this->model('Reportpo_model')->getPODetail($ponum);
 		echo json_encode($data);
 	}
+
+	
 }

@@ -9,7 +9,7 @@
                             <?= $data['menu']; ?>
                         </h2>
                         <ul class="header-dropdown m-r--5">                                
-                            <a href="<?= BASEURL; ?>/exportdata/exportservice/<?= $data['strdate']; ?>/<?= $data['enddate']; ?>" target="_blank" class="btn bg-blue">
+                            <a href="<?= BASEURL; ?>/exportdata/exportreportpo/<?= $data['strdate']; ?>/<?= $data['enddate']; ?>/<?= $data['openpo']; ?>" target="_blank" class="btn bg-blue">
                                <i class="material-icons">cloud_download</i> EXPORT DATA
                             </a>
 
