@@ -62,6 +62,11 @@ class Po_model{
         return $this->db->single();
     }
 
+    public function getApprovalData($ponum){
+        $this->db->query("SELECT a.*, b.nama FROM t_po05 as a inner join t_user as b on a.approve_by = b.username WHERE a.ponum='$ponum'");
+        return $this->db->resultSet();
+    }
+
     public function checkpoitemapproved($ponum){
         $this->db->query("SELECT COUNT(*) as 'rows' FROM t_po02 WHERE ponum='$ponum' AND approvestat <> '1'");
         return $this->db->single();

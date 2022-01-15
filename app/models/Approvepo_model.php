@@ -76,6 +76,15 @@ class Approvepo_model{
             $this->db->execute();
         }
 
+        $insertApproveStatus = "INSERT t_po05 (ponum,approve_level,approve_date,approve_by) values (:ponum,:approve_level,:approve_date,:approve_by)";
+        $this->db->query($insertApproveStatus);
+
+        $this->db->bind('ponum',          $ponum);
+        $this->db->bind('approve_level',  $level['level']);
+        $this->db->bind('approve_date',   date('Y-m-d'));
+        $this->db->bind('approve_by',     $_SESSION['usr']['user']);
+        $this->db->execute();
+
         return $this->db->rowCount();
     }
 

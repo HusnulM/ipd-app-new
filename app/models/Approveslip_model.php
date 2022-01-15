@@ -71,6 +71,15 @@ class Approveslip_model{
             $this->db->execute();
         }
 
+        $insertApproveStatus = "INSERT t_request_slip04 (requestnum,approve_level,approve_date,approve_by) values (:requestnum,:approve_level,:approve_date,:approve_by)";
+        $this->db->query($insertApproveStatus);
+
+        $this->db->bind('requestnum',     $reqnum);
+        $this->db->bind('approve_level',  $level['level']);
+        $this->db->bind('approve_date',   date('Y-m-d'));
+        $this->db->bind('approve_by',     $_SESSION['usr']['user']);
+        $this->db->execute();
+
         return $this->db->rowCount();
     }
 

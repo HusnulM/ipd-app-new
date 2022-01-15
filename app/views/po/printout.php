@@ -10,6 +10,7 @@
      class FPDF_AutoWrapTable extends FPDF {
            private $pdata = array();
            private $hdata = array();
+           private $approval = array();
            private $options = array(
                'filename' => '',
                'destinationfile' => '',
@@ -17,12 +18,13 @@
                'orientation'=>'P'
            );
       
-           function __construct($pdata = array(), $options = array(), $hdata = array()) {
-             parent::__construct();
-             $this->data    = $pdata;
-             $this->options = $options;
-             $this->hdata   = $hdata;
-         }
+        function __construct($pdata = array(), $options = array(), $hdata = array(), $approval = array()) {
+            parent::__construct();
+            $this->data    = $pdata;
+            $this->options = $options;
+            $this->hdata   = $hdata;
+            $this->approval = $approval;
+        }
       
          public function rptDetailData () {
              //
@@ -156,26 +158,37 @@
 
             $this->Ln(20);
             $this->SetFont('Arial','B',8);
-            $this->Cell(5,15,'','',0,'L');
-            $this->Cell(15,15,'','',0,'L');
-            $this->Cell(90,15,'','',0,'R');
-            $this->Cell(200,15,'','',0,'L');
-            $this->Cell(300,15,'APPROVED BY,','',1,'C');
+            $this->Cell(5,15,'','',0,'C');
+            $this->Cell(125,15,'Requested by','',0,'C');
+            $this->Cell(10,15,'','',0,'C');
+            $this->Cell(125,15,'Checked by','',0,'C');
+            $this->Cell(10,15,'','',0,'C');
+            $this->Cell(125,15,'Authorized By','',0,'C');
+            $this->Cell(10,15,'','',0,'C');
+            $this->Cell(125,15,'Approved by,','',1,'C');
+
+            $approval1 = '';
+            $approval2 = '';
+            $approval3 = '';
+            foreach ($this->approval as $d) {
+                if($d['approve_level'] == 1){
+                    $approval1 = $d['nama'];
+                }elseif($d['approve_level'] == 2){
+                    $approval2 = $d['nama'];
+                }elseif($d['approve_level'] > 2){
+                    $approval3 = $d['nama'];
+                }
+            }
 
             $this->Ln(50);
-            $this->Cell(390,15,'','',0,'C');
-            $this->SetLineWidth(1);  
-            $this->Cell(140,15,'','T',0,'C');
-
-            // $this->Ln(10);
-            // $this->Cell(390,15,'','',0,'C');
-            // $this->SetLineWidth(1);  
-            // $this->Cell(140,15,"",'',0,'C');
-            // $this->Cell(70,15,'','',0,'C');
-            // $this->Cell(120,15,'MANAGER PURCHASING','T',1,'C');
-            // $this->Cell(270,15,'Menyetujui',1,1,'C');
-            // $this->Cell(270,50,'',1,0,'C');
-            // $this->Cell(270,50,'',1,1,'C');
+            $this->Cell(5,15,'','',0,'C');
+            $this->Cell(125,15,$this->hdata['createdby'],'T',0,'C');
+            $this->Cell(10,15,'','',0,'C');
+            $this->Cell(125,15,$approval1,'T',0,'C');
+            $this->Cell(10,15,'','',0,'C');
+            $this->Cell(125,15,$approval2,'T',0,'C');
+            $this->Cell(10,15,'','',0,'C');
+            $this->Cell(125,15,$approval3,'T',1,'C');
          }
       
          public function printPDF () {
@@ -303,6 +316,7 @@
      //contoh penggunaan
      $pdata = $data['poitem'];
      $hdata = $data['header'];
+     $approval = $data['approval']; 
       
      //pilihan
      $options = array(
@@ -312,6 +326,6 @@
          'orientation'=>'P' //orientation: P=portrait, L=landscape
      );
       
-     $tabel = new FPDF_AutoWrapTable($pdata, $options,$hdata);
+     $tabel = new FPDF_AutoWrapTable($pdata, $options,$hdata, $approval);
      $tabel->printPDF();
 ?>

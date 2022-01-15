@@ -54,6 +54,7 @@ class Reportslip extends Controller{
 
 		$data['header']   = $this->model('Requestslip_model')->getRequestHeader($reqnum);
 		$data['poitem']   = $this->model('Requestslip_model')->getRequestDetail($reqnum);
+		$data['approval'] = $this->model('Requestslip_model')->getApprovalData($reqnum);
 		$this->view('requestslip/printoutslip', $data);
 		// echo json_encode($data['poitem']);
 	}
@@ -65,6 +66,11 @@ class Reportslip extends Controller{
 
 	public function getdetaildata($reqnum){
 		$data = $this->model('Reportslip_model')->getDetail($reqnum);
+		echo json_encode($data);
+	}
+
+	public function getattachment($reqnum){
+		$data = $this->model('Requestslip_model')->getAttachment($reqnum);
 		echo json_encode($data);
 	}
 

@@ -55,6 +55,7 @@ class Reportpo extends Controller{
 		$data['setting']  = $this->model('Setting_model')->getgensetting();
 		$data['header']   = $this->model('Po_model')->getOrderHeaderPrint($ponum);
 		$data['poitem']   = $this->model('Po_model')->getPOitemPrint($ponum);
+		$data['approval'] = $this->model('Po_model')->getApprovalData($ponum);
 		$this->view('po/printout', $data);
 		// echo json_encode($data['poitem']);
 	}

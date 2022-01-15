@@ -35,6 +35,11 @@ class Requestslip_model{
 		  return $this->db->resultSet();
     }
 
+    public function getApprovalData($reqnum){
+      $this->db->query("SELECT a.*, b.nama FROM t_request_slip04 as a inner join t_user as b on a.approve_by = b.username WHERE a.requestnum='$reqnum'");
+		  return $this->db->resultSet();
+    }
+
     public function getAttachment($reqnum){
       $this->db->query("SELECT * FROM t_request_slip03 WHERE requestnum='$reqnum'");
 		  return $this->db->resultSet();
