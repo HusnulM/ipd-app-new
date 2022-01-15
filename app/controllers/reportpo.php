@@ -69,5 +69,8 @@ class Reportpo extends Controller{
 		echo json_encode($data);
 	}
 
-	
+	public function getattachment($ponum){
+		$data = $this->model('Approvepo_model')->getAttachment($ponum);
+		echo json_encode($data);
+	}
 }

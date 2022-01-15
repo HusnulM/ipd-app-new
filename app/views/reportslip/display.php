@@ -9,11 +9,11 @@
                             <?= $data['menu']; ?>
                         </h2>
                         <ul class="header-dropdown m-r--5">                                
-                            <a href="<?= BASEURL; ?>/exportdata/exportservice/<?= $data['strdate']; ?>/<?= $data['enddate']; ?>" target="_blank" class="btn bg-blue">
+                            <a href="<?= BASEURL; ?>/reportslip/exportreportgrpo/<?= $data['strdate']; ?>/<?= $data['enddate']; ?>/<?= $data['dept']; ?>" target="_blank" class="btn bg-blue">
                                <i class="material-icons">cloud_download</i> EXPORT DATA
                             </a>
 
-                            <a href="<?= BASEURL; ?>/reportpo" class="btn bg-blue">
+                            <a href="<?= BASEURL; ?>/reportslip" class="btn bg-blue">
                                <i class="material-icons">backspace</i> BACK
                             </a>
                         </ul>
