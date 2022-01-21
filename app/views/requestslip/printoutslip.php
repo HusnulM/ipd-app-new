@@ -165,6 +165,31 @@
             $this->Cell(125,15,$approval2,'T',0,'C');
             $this->Cell(10,15,'','',0,'C');
             $this->Cell(125,15,$approval3,'T',1,'C');
+
+            $this->SetFont('Arial','',7);
+            $this->Cell(5,15,'','',0,'C');
+            $this->Cell(125,15,'','',0,'C');
+            $this->Cell(10,15,'','',0,'C');
+            if($approval1 !== ''){
+                $this->Cell(125,15,'SYSTEM APPROVED','',0,'C');
+            }else{
+                $this->Cell(125,15,'','',0,'C');
+            }
+            if($approval2 !== ''){
+                $this->Cell(125,15,'SYSTEM APPROVED','',0,'C');
+            }else{
+                $this->Cell(125,15,'','',0,'C');
+            }
+            if($approval3 !== ''){
+                $this->Cell(125,15,'SYSTEM APPROVED','',0,'C');
+            }else{
+                $this->Cell(125,15,'','',1,'C');
+            }
+            // $this->Cell(125,15,'SYSTEM APPROVED','',0,'C');
+            // $this->Cell(10,15,'','',0,'C');
+            // $this->Cell(125,15,'SYSTEM APPROVED','',0,'C');
+            // $this->Cell(10,15,'','',0,'C');
+            // $this->Cell(125,15,'SYSTEM APPROVED','',1,'C');
             // $this->Cell(390,15,'','',0,'C');
             // $this->SetLineWidth(1);  
             // $this->Cell(140,15,'','T',0,'C');
@@ -311,4 +336,4 @@
       
      $tabel = new FPDF_AutoWrapTable($pdata, $options,$hdata, $approval);
      $tabel->printPDF();
-     ?>
+?>

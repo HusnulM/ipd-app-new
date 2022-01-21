@@ -203,6 +203,8 @@ class Po_model{
         $password = $mailConfig['password'];
         
         $to_id = $toemail;
+
+        $totalPrice = 0;
   
         $subject = 'Purchase Order Approval '. $reqnum ;
         $mail = new PHPMailer;
@@ -254,11 +256,13 @@ class Po_model{
                     <th>Description</th>
                     <th>Quantity</th>
                     <th>Unit Price</th>
+                    <th>Sub Total</th>
                 </thead>
             <tbody>
             ";
             
         foreach($prdata as $row){
+            $totalPrice = $totalPrice + ($row['price']*$row['quantity']);
           $icount += 1;
             $quantity = 0;
             if (strpos($row['quantity'], '.000') !== false) {
@@ -274,10 +278,18 @@ class Po_model{
               <td>".$row['matdesc']."</td>
               <td style='text-align:right;'>". $quantity. " ". $row['unit'] ." </td>
               <td style='text-align:right;'>". number_format($row['price'], 2) ." </td>
+              <td style='text-align:right;'>". number_format($row['price']*$quantity, 2) ." </td>
             </tr>";  
         }    
             
-        $mailBody .= "</tbody></table><br><p>Thanks.</p>
+        $mailBody .= "</tbody>
+        <tfoot>
+            <tr>
+                <td colspan='5' style='text-align:right;'><b>Grand Total</b></td>
+                <td style='text-align:right;'><b>". number_format($totalPrice, 2) ."</b></td>
+            </tr>
+        </tfoot>
+        </table><br><p>Thanks.</p>
         <br><a href='". BASEURL ."/approvepo' target='_blank'>". BASEURL ."</a>";
         $mailBody .= "
         </body>

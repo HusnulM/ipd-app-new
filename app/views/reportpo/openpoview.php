@@ -9,11 +9,11 @@
                             <?= $data['menu']; ?>
                         </h2>
                         <ul class="header-dropdown m-r--5">                                
-                            <a href="<?= BASEURL; ?>/exportdata/exportreportpo/<?= $data['strdate']; ?>/<?= $data['enddate']; ?>/<?= $data['openpo']; ?>" target="_blank" class="btn bg-blue">
+                            <a href="<?= BASEURL; ?>/exportdata/exportreportpo/<?= $data['strdate']; ?>/<?= $data['enddate']; ?>/O" target="_blank" class="btn bg-blue">
                                <i class="material-icons">cloud_download</i> EXPORT DATA
                             </a>
 
-                            <a href="<?= BASEURL; ?>/reportpo" class="btn bg-blue">
+                            <a href="<?= BASEURL; ?>/reportpo/openpo" class="btn bg-blue">
                                <i class="material-icons">backspace</i> BACK
                             </a>
                         </ul>
@@ -78,7 +78,6 @@
         $(function(){
             var strdate = "<?= $data['strdate']; ?>";
             var enddate = "<?= $data['enddate']; ?>";
-            var openpo  = "<?= $data['openpo']; ?>";
 
             // alert(openpo)
 
@@ -134,7 +133,7 @@
             }
 
             var table = $('#example').DataTable( {
-                "ajax": base_url+"/reportpo/getheaderdata/"+strdate+"/"+enddate+"/"+openpo,
+                "ajax": base_url+"/reportpo/getreportopenpo/"+strdate+"/"+enddate,
                 "columns": [
                     {
                         "className":      'details-control',

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 17, 2022 at 04:35 AM
+-- Generation Time: Jan 21, 2022 at 02:38 AM
 -- Server version: 10.4.14-MariaDB
 -- PHP Version: 7.4.9
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `ipd_app`
+-- Database: `ipd_app_new`
 --
 
 DELIMITER $$
@@ -164,7 +164,7 @@ BEGIN
         end if;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestSlipStatus` (IN `pReqnum` VARCHAR(15), IN `pReqitem` INT)  BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestSlipStatus` (IN `pReqnum` VARCHAR(15), IN `pReqitem` INT, IN `pMaterial` VARCHAR(70), IN `pPrice` DECIMAL(15,2))  BEGIN
 	DECLARE prQty decimal(15,3);
     DECLARE poQty decimal(15,3);
     SELECT quantity into prQty from t_request_slip02 where requestnum = pReqnum and request_item = pReqitem;
@@ -173,6 +173,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestSlipStatus` (IN `pR
    IF poQty >= prQty then  
 		UPDATE t_request_slip02 set po_created = 'Y' WHERE requestnum = pReqnum AND request_item = pReqitem;
     END IF;  
+    
+    UPDATE t_material set stdprice = pPrice WHERE material = pMaterial;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateStock` (IN `pMaterial` VARCHAR(70), IN `pDept` INT, IN `pQuantity` DECIMAL(15,3), IN `pMvt` VARCHAR(5), IN `pUnit` VARCHAR(5))  BEGIN
@@ -213,10 +215,13 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` FUNCTION `fGetMaterialPrice` (`pMaterial` VARCHAR(70), `pMonth` INT, `pYear` INT) RETURNS DECIMAL(15,2) BEGIN
     DECLARE hasil decimal(15,2);
+    DECLARE totalPO int;
+    
+    SET totalPO = (SELECT count(*) from t_po01 as a INNER JOIN t_po02 as b on a.ponum = b.ponum where month(a.podat) = pMonth and year(a.podat) = pYear and b.material = pMaterial and a.is_rejected = 'N');
 	
-    SET hasil = (SELECT avg_price from v_material_price_history where month = pMonth and year = pYear and material = pMaterial);
+    SET hasil = (SELECT total_unitprice from v_material_price_history where month = pMonth and year = pYear and material = pMaterial);
     	-- return the customer level
-	RETURN (hasil);
+	RETURN (hasil/totalPO);
 END$$
 
 CREATE DEFINER=`root`@`localhost` FUNCTION `fGetUserDepartment` (`puserName` VARCHAR(50)) RETURNS VARCHAR(50) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci NO SQL
@@ -742,9 +747,9 @@ CREATE TABLE `t_material` (
 --
 
 INSERT INTO `t_material` (`material`, `brand`, `matdesc`, `supplier`, `mattype`, `matgroup`, `color`, `size`, `matunit`, `minstock`, `orderunit`, `stdprice`, `image`, `active`, `createdon`, `createdby`) VALUES
-('PART005', 'HONDA', 'Test Part Image', 'Test', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '25.00', 'PART005-kitchen.jpeg', NULL, '2021-11-04 05:11:46', 'sys-admin'),
-('PART006', 'YAMAHA', 'Test Part With Image', 'YAMAHA', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '75.00', 'PART006-lemari.jpg', NULL, '2021-11-04 11:11:59', 'sys-admin'),
-('PART01', 'YAMAHA', 'Part01 Testing', 'YAMAHADO', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '4000.95', 'PART01-ic_home.png', NULL, '2021-08-15 11:08:12', 'sys-admin'),
+('PART005', 'HONDA', 'Test Part Image', 'Test', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '455.00', 'PART005-kitchen.jpeg', NULL, '2021-11-04 05:11:46', 'sys-admin'),
+('PART006', 'YAMAHA', 'Test Part With Image', 'YAMAHA', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '556.00', 'PART006-lemari.jpg', NULL, '2021-11-04 11:11:59', 'sys-admin'),
+('PART01', 'YAMAHA', 'Part01 Testing', 'YAMAHADO', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '556.00', 'PART01-ic_home.png', NULL, '2021-08-15 11:08:12', 'sys-admin'),
 ('PART02', 'YAMAHA', 'Part02 Testing', 'YAMAHADO', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '9999.50', 'PART02-user.ico', NULL, '2021-08-15 11:08:20', 'sys-admin'),
 ('PART03', 'HONDA', 'Test Part With Image', 'HONDA', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '100.00', 'PART03-home.PNG', NULL, '2021-11-04 05:11:11', 'sys-admin'),
 ('PART04', 'Honda', 'Testing', 'Test', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '29000.00', 'PART04-', NULL, '2022-01-04 01:01:34', 'sys-admin'),
@@ -881,7 +886,8 @@ INSERT INTO `t_menus` (`id`, `menu`, `route`, `type`, `icon`, `menugroup`, `grou
 (42, 'Report Purchase Order', 'reportpo', 'parent', '', 3, NULL, 6, '2022-01-04 00:00:00', 'sys-admin'),
 (43, 'Report Receipt Purchase Order', 'reportgrpo', 'parent', '', 3, NULL, 7, '2022-01-04 00:00:00', 'sys-admin'),
 (44, 'Material Price Order History', 'materialprice', 'parent', '', 3, NULL, 8, '2022-01-04 00:00:00', 'sys-admin'),
-(45, 'Report Request Slip', 'reportslip', 'parent', '', 3, NULL, NULL, '2022-01-12 00:00:00', 'sys-admin');
+(45, 'Report Request Slip', 'reportslip', 'parent', '', 3, NULL, NULL, '2022-01-12 00:00:00', 'sys-admin'),
+(46, 'Open Purchase Order', 'reportpo/openpo', 'parent', '', 3, NULL, NULL, '2022-01-20 00:00:00', 'sys-admin');
 
 -- --------------------------------------------------------
 
@@ -997,7 +1003,7 @@ INSERT INTO `t_nriv` (`object`, `fromnum`, `tonumber`, `currentnum`) VALUES
 ('GRPO', '5000000000', '5999999999', '5000000016'),
 ('INVENTORY', '2000000000', '2999999999', '2000000009'),
 ('PR', '1000000000', '1999999999', '1000000013'),
-('REQ_SLIP', '3000000000', '3999999999', '3000000019'),
+('REQ_SLIP', '3000000000', '3999999999', '3000000020'),
 ('SUPPLIER', '2000000000', '2999999999', '2000000004');
 
 -- --------------------------------------------------------
@@ -1037,6 +1043,7 @@ INSERT INTO `t_po01` (`ponum`, `ext_ponum`, `potype`, `podat`, `vendor`, `note`,
 ('100009', '100009', NULL, '2021-12-28', '2000000000', 'Test', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2021-12-28 09:12:32', 'sys-admin'),
 ('190000', '190000', NULL, '2022-01-03', '2000000000', 'Test PO', 'PHP', '99', 'sys-admin', 'Y', 'Y', 'Test Reject PO', NULL, NULL, '2022-01-03 02:01:36', 'sys-admin'),
 ('190001', '190001', NULL, '2022-01-03', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-03 02:01:16', 'sys-admin'),
+('700000', '700000', NULL, '2022-01-16', '2000000000', 'Note', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-16 05:01:35', 'sys-admin'),
 ('899998', '899998', NULL, '2022-01-13', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-13 02:01:16', 'sys-admin'),
 ('899999', '899999', NULL, '2022-01-13', '2000000000', 'Test', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-13 02:01:52', 'sys-admin'),
 ('900000', '900000', NULL, '2022-01-04', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-04 01:01:02', 'sys-admin'),
@@ -1044,7 +1051,9 @@ INSERT INTO `t_po01` (`ponum`, `ext_ponum`, `potype`, `podat`, `vendor`, `note`,
 ('900006', '900006', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-05 10:01:00', 'sys-admin'),
 ('900007', '900007', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-05 10:01:42', 'sys-admin'),
 ('900008', '900008', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-05 10:01:48', 'sys-admin'),
-('900009', '900009', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-05 10:01:40', 'sys-admin');
+('900009', '900009', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-05 10:01:40', 'sys-admin'),
+('923456', '923456', NULL, '2022-01-20', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, NULL, '2022-01-20 02:01:07', 'sys-admin'),
+('993456', '993456', NULL, '2022-01-20', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, NULL, '2022-01-20 02:01:00', 'sys-admin');
 
 --
 -- Triggers `t_po01`
@@ -1102,6 +1111,8 @@ INSERT INTO `t_po02` (`ponum`, `poitem`, `material`, `matdesc`, `quantity`, `uni
 ('190000', 1, 'PART006', 'Test Part With Image', '1500.000', 'PC', '100.00', NULL, NULL, '0.000', '3000000001', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-03', 'sys-admin'),
 ('190001', 1, 'PART005', 'Test Part Image', '100.000', 'PC', '100.00', NULL, NULL, '0.000', '3000000004', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-03', 'sys-admin'),
 ('190001', 2, 'PART006', 'Test Part With Image', '2000.000', 'PC', '99.00', NULL, NULL, '0.000', '3000000004', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-03', 'sys-admin'),
+('700000', 1, 'PART005', 'Test Part Image', '100.000', 'PC', '102.00', NULL, NULL, '0.000', '3000000019', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-16', 'sys-admin'),
+('700000', 2, 'PART006', 'Test Part With Image', '250.000', 'PC', '99.00', NULL, NULL, '0.000', '3000000019', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-16', 'sys-admin'),
 ('899998', 1, 'PART006', 'Test Part With Image', '50.000', 'PC', '45.00', NULL, NULL, '0.000', '3000000015', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-13', 'sys-admin'),
 ('899998', 2, 'PART01', 'Part01 Testing', '100.000', 'PC', '65.00', NULL, NULL, '0.000', '3000000015', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-13', 'sys-admin'),
 ('899998', 3, 'PART02', 'Part02 Testing', '150.000', 'PC', '66.00', NULL, NULL, '0.000', '3000000015', 3, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-13', 'sys-admin'),
@@ -1118,7 +1129,12 @@ INSERT INTO `t_po02` (`ponum`, `poitem`, `material`, `matdesc`, `quantity`, `uni
 ('900008', 1, 'PART005', 'Test Part Image', '100.000', 'PC', '550.00', NULL, NULL, '0.000', '3000000011', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
 ('900008', 2, 'PART006', 'Test Part With Image', '200.000', 'PC', '8.77', NULL, NULL, '0.000', '3000000011', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
 ('900009', 1, 'PART005', 'Test Part Image', '3.000', 'PC', '5000.00', NULL, NULL, '0.000', '3000000012', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
-('900009', 2, 'PART006', 'Test Part With Image', '3.000', 'PC', '6500.00', NULL, NULL, '0.000', '3000000012', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin');
+('900009', 2, 'PART006', 'Test Part With Image', '3.000', 'PC', '6500.00', NULL, NULL, '0.000', '3000000012', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
+('923456', 1, 'PART005', 'Test Part Image', '60.000', 'PC', '69.00', NULL, NULL, '0.000', '3000000016', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-20', 'sys-admin'),
+('923456', 2, 'PART006', 'Test Part With Image', '600.000', 'PC', '876.00', NULL, NULL, '0.000', '3000000016', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-20', 'sys-admin'),
+('923456', 3, 'PART01', 'Part01 Testing', '560.000', 'PC', '556.00', NULL, NULL, '0.000', '3000000016', 3, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-20', 'sys-admin'),
+('993456', 1, 'PART005', 'Test Part Image', '100.000', 'PC', '455.00', NULL, NULL, '0.000', '3000000017', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-20', 'sys-admin'),
+('993456', 2, 'PART006', 'Test Part With Image', '200.000', 'PC', '556.00', NULL, NULL, '0.000', '3000000017', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-20', 'sys-admin');
 
 --
 -- Triggers `t_po02`
@@ -1128,7 +1144,7 @@ CREATE TRIGGER `tg_UpdateRequestSlipPOStatus` AFTER DELETE ON `t_po02` FOR EACH 
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `tg_UpdateRequestSlipStatus` AFTER INSERT ON `t_po02` FOR EACH ROW CALL sp_UpdateRequestSlipStatus(NEW.requestnum, NEW.request_item)
+CREATE TRIGGER `tg_UpdateRequestSlipPOStatusAndMaterialPrice` AFTER INSERT ON `t_po02` FOR EACH ROW CALL sp_UpdateRequestSlipStatus(NEW.requestnum, NEW.request_item, NEW.material, NEW.price)
 $$
 DELIMITER ;
 
@@ -1159,7 +1175,11 @@ INSERT INTO `t_po03` (`id`, `ponum`, `efile`) VALUES
 (10, '900008', '900008-'),
 (11, '900009', '900009-'),
 (12, '899999', '899999-'),
-(13, '899998', '899998-');
+(13, '899998', '899998-'),
+(14, '700000', '700000-Link Char SO.txt'),
+(15, '700000', '700000-link restfull api node js.txt'),
+(16, '923456', '923456-'),
+(17, '993456', '993456-');
 
 -- --------------------------------------------------------
 
@@ -1179,6 +1199,26 @@ CREATE TABLE `t_po04` (
   `createdby` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `createdon` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Material PO History';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `t_po05`
+--
+
+CREATE TABLE `t_po05` (
+  `ponum` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `approve_level` int(11) NOT NULL,
+  `approve_date` date NOT NULL,
+  `approve_by` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `t_po05`
+--
+
+INSERT INTO `t_po05` (`ponum`, `approve_level`, `approve_date`, `approve_by`) VALUES
+('700000', 1, '2022-01-16', 'sys-admin');
 
 -- --------------------------------------------------------
 
@@ -1407,7 +1447,8 @@ INSERT INTO `t_request_slip01` (`requestnum`, `request_date`, `request_by`, `req
 ('3000000015', '2022-01-05', 'Administrator', 'Test Request Slip', 99, 'Y', 'Y', 'Testing Reject Slip', 1, NULL, '2022-01-05', 'sys-admin'),
 ('3000000016', '2022-01-05', 'Administrator', 'Test Request Slip', 99, 'Y', 'Y', 'harga terlalu mahal', 1, NULL, '2022-01-05', 'sys-admin'),
 ('3000000017', '2022-01-05', 'Administrator', 'Test Request Slip', 99, 'Y', 'Y', 'ganti vendor, vendor sudah tidak bisa supply', 1, NULL, '2022-01-05', 'sys-admin'),
-('3000000018', '2022-01-05', 'Administrator', 'Test Request Slip', 2, 'N', 'N', NULL, 1, NULL, '2022-01-05', 'sys-admin');
+('3000000018', '2022-01-05', 'Administrator', 'Test Request Slip', 2, 'N', 'N', NULL, 1, NULL, '2022-01-05', 'sys-admin'),
+('3000000019', '2022-01-16', 'Administrator', 'Test Approve', 3, 'Y', 'N', NULL, 1, NULL, '2022-01-16', 'sys-admin');
 
 -- --------------------------------------------------------
 
@@ -1469,13 +1510,15 @@ INSERT INTO `t_request_slip02` (`requestnum`, `request_item`, `material`, `quant
 ('3000000015', 1, 'PART006', '50.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
 ('3000000015', 2, 'PART01', '100.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
 ('3000000015', 3, 'PART02', '150.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
-('3000000016', 1, 'PART005', '60.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
-('3000000016', 2, 'PART006', '600.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
-('3000000016', 3, 'PART01', '560.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
-('3000000017', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
-('3000000017', 2, 'PART006', '200.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000016', 1, 'PART005', '60.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
+('3000000016', 2, 'PART006', '600.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
+('3000000016', 3, 'PART01', '560.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
+('3000000017', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
+('3000000017', 2, 'PART006', '200.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
 ('3000000018', 1, 'PART006', '4.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
-('3000000018', 2, 'PART005', '3.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin');
+('3000000018', 2, 'PART005', '3.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000019', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'Y', '2022-01-16', 'sys-admin'),
+('3000000019', 2, 'PART006', '250.000', 'PC', '0.00', 1, 'Y', '2022-01-16', 'sys-admin');
 
 -- --------------------------------------------------------
 
@@ -1508,7 +1551,29 @@ INSERT INTO `t_request_slip03` (`id`, `requestnum`, `efile`) VALUES
 (15, '3000000015', '3000000015-Invoice Vimec 31122021.pdf'),
 (16, '3000000016', '3000000016-Invoice Vimec 31122021.pdf'),
 (17, '3000000017', '3000000017-'),
-(18, '3000000018', '3000000018-');
+(18, '3000000018', '3000000018-'),
+(19, '3000000019', '3000000019-Link Char SO.txt');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `t_request_slip04`
+--
+
+CREATE TABLE `t_request_slip04` (
+  `requestnum` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `approve_level` int(11) NOT NULL,
+  `approve_date` date NOT NULL,
+  `approve_by` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `t_request_slip04`
+--
+
+INSERT INTO `t_request_slip04` (`requestnum`, `approve_level`, `approve_date`, `approve_by`) VALUES
+('3000000019', 1, '2022-01-16', 'sys-admin'),
+('3000000019', 2, '2022-01-16', 'user1');
 
 -- --------------------------------------------------------
 
@@ -1581,6 +1646,7 @@ INSERT INTO `t_rolemenu` (`roleid`, `menuid`, `createdon`, `createdby`) VALUES
 (1, 43, '2022-01-04 00:00:00', 'sys-admin'),
 (1, 44, '2022-01-04 00:00:00', 'sys-admin'),
 (1, 45, '2022-01-12 00:00:00', 'sys-admin'),
+(1, 46, '2022-01-20 00:00:00', 'sys-admin'),
 (2, 18, '2021-08-17 00:00:00', 'sys-admin'),
 (2, 23, '2021-08-17 00:00:00', 'sys-admin'),
 (2, 39, '2021-12-22 00:00:00', 'sys-admin'),
@@ -1729,6 +1795,10 @@ INSERT INTO `t_role_avtivity` (`roleid`, `menuid`, `activity`, `status`, `create
 (1, 45, 'Delete', 0, '2022-01-12'),
 (1, 45, 'Read', 1, '2022-01-12'),
 (1, 45, 'Update', 0, '2022-01-12'),
+(1, 46, 'Create', 0, '2022-01-20'),
+(1, 46, 'Delete', 0, '2022-01-20'),
+(1, 46, 'Read', 1, '2022-01-20'),
+(1, 46, 'Update', 0, '2022-01-20'),
 (2, 18, 'Create', 1, '2021-08-17'),
 (2, 18, 'Delete', 1, '2021-08-17'),
 (2, 18, 'Read', 1, '2021-08-17'),
@@ -1905,6 +1975,32 @@ CREATE TABLE `t_whs_prtype` (
 INSERT INTO `t_whs_prtype` (`prtype`, `warehouseid`) VALUES
 ('PR01', 'WH01'),
 ('PR02', 'WH02');
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `v_grpo01`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_grpo01` (
+`ponum` varchar(25)
+,`poitem` int(11)
+,`podat` date
+,`vendor` varchar(10)
+,`supplier_name` varchar(100)
+,`note` text
+,`material` varchar(70)
+,`matdesc` varchar(100)
+,`quantity` decimal(15,3)
+,`grqty` decimal(15,3)
+,`unit` varchar(10)
+,`price` decimal(15,2)
+,`gramount` decimal(30,5)
+,`movement_number` varchar(10)
+,`movement_year` int(11)
+,`movement_item` int(11)
+,`movement_date` date
+);
 
 -- --------------------------------------------------------
 
@@ -2147,6 +2243,15 @@ CREATE TABLE `v_user_role_avtivity` (
 ,`username` varchar(100)
 ,`rolename` varchar(50)
 );
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `v_grpo01`
+--
+DROP TABLE IF EXISTS `v_grpo01`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_grpo01`  AS  select `a`.`ponum` AS `ponum`,`b`.`poitem` AS `poitem`,`a`.`podat` AS `podat`,`a`.`vendor` AS `vendor`,`f`.`supplier_name` AS `supplier_name`,`a`.`note` AS `note`,`b`.`material` AS `material`,`b`.`matdesc` AS `matdesc`,`b`.`quantity` AS `quantity`,`c`.`quantity` AS `grqty`,`b`.`unit` AS `unit`,`b`.`price` AS `price`,`c`.`quantity` * `b`.`price` AS `gramount`,`c`.`movement_number` AS `movement_number`,`c`.`movement_year` AS `movement_year`,`c`.`movement_item` AS `movement_item`,`d`.`movement_date` AS `movement_date` from ((((`t_po01` `a` join `t_po02` `b` on(`a`.`ponum` = `b`.`ponum`)) join `t_movement_02` `c` on(`b`.`ponum` = `c`.`ponum` and `b`.`poitem` = `c`.`poitem`)) join `t_movement_01` `d` on(`c`.`movement_number` = `d`.`movement_number` and `c`.`movement_year` = `d`.`movement_year`)) join `t_supplier` `f` on(`a`.`vendor` = `f`.`supplier_id`)) order by `a`.`vendor`,`a`.`ponum`,`b`.`poitem` ;
 
 -- --------------------------------------------------------
 
@@ -2434,6 +2539,12 @@ ALTER TABLE `t_po04`
   ADD PRIMARY KEY (`ponum`,`poitem`);
 
 --
+-- Indexes for table `t_po05`
+--
+ALTER TABLE `t_po05`
+  ADD PRIMARY KEY (`ponum`,`approve_level`);
+
+--
 -- Indexes for table `t_pr01`
 --
 ALTER TABLE `t_pr01`
@@ -2486,6 +2597,12 @@ ALTER TABLE `t_request_slip02`
 --
 ALTER TABLE `t_request_slip03`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `t_request_slip04`
+--
+ALTER TABLE `t_request_slip04`
+  ADD PRIMARY KEY (`requestnum`,`approve_level`);
 
 --
 -- Indexes for table `t_role`
@@ -2609,13 +2726,13 @@ ALTER TABLE `t_menugroups`
 -- AUTO_INCREMENT for table `t_menus`
 --
 ALTER TABLE `t_menus`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `t_po03`
 --
 ALTER TABLE `t_po03`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `t_process_sequence`
@@ -2627,7 +2744,7 @@ ALTER TABLE `t_process_sequence`
 -- AUTO_INCREMENT for table `t_request_slip03`
 --
 ALTER TABLE `t_request_slip03`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `t_role`
