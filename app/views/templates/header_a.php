@@ -6,7 +6,7 @@
 
     $user = $_SESSION['usr']['user'];
 
-    $query1 = $pdo->query("SELECT distinct * FROM v_user_menugroup WHERE username='$user'");
+    $query1 = $pdo->query("SELECT distinct * FROM v_user_menugroup WHERE username='$user' order by menugroup ASC");
     $query2 = $pdo->query("SELECT distinct username,menuid,menu,route,type,menugroup,icon FROM v_user_menu WHERE username='$user' and type='parent' ORDER BY menugroup,_sorting,menuid ASC");
     $query3 = $pdo->query("SELECT * FROM tblsetting where id = '1'");
 

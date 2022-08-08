@@ -22,32 +22,32 @@
                                                 <label for="prtype">Request Type</label>
                                                 <select class="form-control show-tick" name="prtype" id="prtype" required>
                                                     <option value="<?= $data['cprtype']['prtype']; ?>"><?= $data['cprtype']['prtype']; ?> - <?= $data['cprtype']['description']; ?></option>
-                                                    <?php foreach($data['prtype'] as $row): ?>
+                                                    <!-- <?php foreach($data['prtype'] as $row): ?>
                                                         <?php if($data['cprtype']['prtype'] !== $row['prtype']): ?>
                                                         <option value="<?= $row['prtype']; ?>"><?= $row['prtype']; ?> - <?= $row['description']; ?></option>
                                                         <?php endif; ?>
-                                                    <?php endforeach; ?>
+                                                    <?php endforeach; ?> -->
                                                 </select>
                                             </div>
                                         </div>    
                                     </div>
 
                                     <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
-                                        <div id="div_whs">
+                                        <div id="div_whs" style="display:none;">
 
                                         </div>
-                                        <!-- <div class="form-group">
+                                        <div class="form-group">
                                             <div class="form-line">
                                                 <label for="warehouse">Warehouse</label>
                                                 <select class="form-control show-tick" name="warehouse" id="warehouse" required>
                                                 
                                                 <option value="<?= $data['cwhs']['warehouseid']; ?>"><?= $data['cwhs']['warehouseid']; ?> - <?= $data['cwhs']['warehousename']; ?></option>
-                                                    <?php foreach($data['whs'] as $row): ?>
+                                                    <!-- <?php foreach($data['whs'] as $row): ?>
                                                         <option value="<?= $row['warehouseid']; ?>"><?= $row['warehouseid']; ?> - <?= $row['warehousename']; ?></option>
-                                                    <?php endforeach; ?>
+                                                    <?php endforeach; ?> -->
                                                 </select>
                                             </div>
-                                        </div>     -->
+                                        </div>    
                                     </div> 
 
                                     <div class="col-lg-5 col-md-12 col-sm-12 col-xs-12">
@@ -284,7 +284,7 @@
                 loadwarehouse(_prtype);
             });
 
-            loaddefaultwarehouse($('#prtype').val());
+            // loaddefaultwarehouse($('#prtype').val());
             function loaddefaultwarehouse(_prtype){
                 $.ajax({
                     url: base_url+'/warehouse/getwarehousebyprtype/'+_prtype,

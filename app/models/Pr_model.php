@@ -95,7 +95,7 @@ class Pr_model{
     public function checkinventorystock($data){
         $matnr = $data['itm_material'];
         $menge = $data['itm_qty'];
-        $lgort = $data['warehouse'];
+        $lgort = $data['warehouse'] ?? $data['selectedwarehouse'];
         $meins = $data['itm_unit'];
         $ind   = "";
         $errmsg = array();
@@ -131,6 +131,8 @@ class Pr_model{
         $price = $data['itm_price'];
         $txz01 = $data['itm_remark'];
 
+
+
         $query1 = "INSERT INTO t_pr01(prnum,prtype,note,prdate,approvestat,deptid,currency,warehouse,requestby,createdon,createdby)
                    VALUES(:prnum,:prtype,:note,:prdate,:approvestat,:deptid,:currency,:warehouse,:requestby,:createdon,:createdby)
                    ON DUPLICATE KEY UPDATE prtype=:prtype, note=:note, prdate=:prdate,approvestat=:approvestat,deptid=:deptid,currency=:currency,warehouse=:warehouse,requestby=:requestby,createdon=:createdon,createdby=:createdby";
@@ -141,13 +143,13 @@ class Pr_model{
 
         $this->db->query($query1);
 		$this->db->bind('prnum',      $prnum);
-        $this->db->bind('prtype',     $data['prtype']);
+        $this->db->bind('prtype',     $data['prtype'] ?? $data['selectedprtype']);
         $this->db->bind('note',       $data['note']);
         $this->db->bind('prdate',     $data['reqdate']);
         $this->db->bind('approvestat','1');
         $this->db->bind('deptid',     $data['department']);
         $this->db->bind('currency',   $data['currency']);
-        $this->db->bind('warehouse',  $data['warehouse']);
+        $this->db->bind('warehouse',  $data['warehouse'] ?? $data['selectedwarehouse']);
         $this->db->bind('requestby',  $data['requestor']);
 		$this->db->bind('createdon',  date('Y-m-d H:m:s'));
         $this->db->bind('createdby',  $_SESSION['usr']['user']);
@@ -175,7 +177,7 @@ class Pr_model{
             $_price = str_replace(",", "",  $price[$i]);
             $this->db->bind('price',        $_price);
             $this->db->bind('currency',     $data['currency']);
-            $this->db->bind('warehouse',    $data['warehouse']);
+            $this->db->bind('warehouse',    $data['warehouse'] ?? $data['selectedwarehouse']);
             $this->db->bind('approvestat',  '1');
             $this->db->bind('remark',       $txz01[$i]);
             $this->db->bind('deptid',       $data['department']);

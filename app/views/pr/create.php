@@ -16,10 +16,13 @@
                                             <div class="form-line">
                                                 <label for="prtype">Request Type</label>
                                                 <select class="form-control show-tick" name="prtype" id="prtype" required>
+                                                    <option value="">Select PR Type</option>
                                                     <?php foreach($data['prtype'] as $row): ?>
                                                         <option value="<?= $row['prtype']; ?>"><?= $row['prtype']; ?> - <?= $row['description']; ?></option>
                                                     <?php endforeach; ?>
                                                 </select>
+                                                <input type="hidden" name="selectedprtype" id="selectedprtype"/>
+                                                <input type="hidden" name="selectedwarehouse" id="selectedwarehouse"/>
                                             </div>
                                         </div>    
                                     </div> 
@@ -267,7 +270,11 @@
                 // getwarehousebyprtype
                 var _prtype = this.value;
                 loadwarehouse(_prtype);
+                $('#selectedprtype').val(_prtype);
             });
+
+            // selectedprtype
+            // selectedwarehouse
 
             loadwarehouse($('#prtype').val());
             function loadwarehouse(_prtype){
@@ -287,11 +294,21 @@
                     var listItems = '';
                     listItems += "<label>Warehouse</label>";
                     listItems += "<select name='warehouse' id='warehouse' class='form-control' >";
+                    listItems += "<option class='form-control' value=''>Select Warehouse</option>";
                     for (var x = 0; x < data.length; x++) {                        
                         listItems += "<option class='form-control' value='"+ data[x].warehouseid +"'>"+ data[x].warehouseid +" - "+ data[x].warehousename +"</option>";
                     };
                     listItems += "</select>";
                     $("#div_whs").html(listItems);
+
+                    var whsCode = document.getElementById('warehouse');
+
+                    $('#warehouse').on('change', function(){
+                        // alert('tes')
+                        $('#selectedwarehouse').val(this.value);
+                        document.getElementById("warehouse").disabled = true;  
+                        document.getElementById("prtype").disabled = true;  
+                    })
                 });
             }
 
