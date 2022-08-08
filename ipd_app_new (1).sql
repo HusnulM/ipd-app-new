@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 4.7.4
+-- version 5.0.2
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 16, 2022 at 12:14 AM
--- Server version: 5.5.16
--- PHP Version: 7.2.1
+-- Generation Time: Jan 21, 2022 at 02:38 AM
+-- Server version: 10.4.14-MariaDB
+-- PHP Version: 7.4.9
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -19,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `ipd_app`
+-- Database: `ipd_app_new`
 --
 
 DELIMITER $$
@@ -39,6 +38,42 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_GenerateBudgetSummary` (IN `pDep
     	INSERT INTO t_budget_summary(department,budget_period,amount,issuing_amount,budget_status)
         VALUES(pDeptid,pPeriod,pAmount,0,'1');
     END IF;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_GetMaterialPriceHistory` (IN `pYear` INT, IN `pMaterial` VARCHAR(70))  BEGIN
+
+	if pMaterial = 'ALL' THEN
+        SELECT DISTINCT pYear as 'year',a.material, c.matdesc, a.vendor, b.supplier_name, 
+        fGetMaterialPrice(a.material,1,pYear) as 'Jan', 
+        fGetMaterialPrice(a.material,2,pYear) as 'Feb',
+        fGetMaterialPrice(a.material,3,pYear) as 'Mar',
+        fGetMaterialPrice(a.material,4,pYear) as 'Apr',
+        fGetMaterialPrice(a.material,5,pYear) as 'May',
+        fGetMaterialPrice(a.material,6,pYear) as 'Jun',
+        fGetMaterialPrice(a.material,7,pYear) as 'Jul', 
+        fGetMaterialPrice(a.material,8,pYear) as 'Aug',
+        fGetMaterialPrice(a.material,9,pYear) as 'Sep',
+        fGetMaterialPrice(a.material,10,pYear) as 'Oct',
+        fGetMaterialPrice(a.material,11,pYear) as 'Nov',
+        fGetMaterialPrice(a.material,12,pYear) as 'Dec'
+        from v_material_price_history as a inner join t_supplier as b on a.vendor = b.supplier_id INNER JOIN t_material as c on a.material = c.material WHERE a.year = pYear order by a.material;
+    else
+        SELECT DISTINCT pYear as 'year',a.material, c.matdesc, a.vendor, b.supplier_name, 
+        fGetMaterialPrice(a.material,1,pYear) as 'Jan', 
+        fGetMaterialPrice(a.material,2,pYear) as 'Feb',
+        fGetMaterialPrice(a.material,3,pYear) as 'Mar',
+        fGetMaterialPrice(a.material,4,pYear) as 'Apr',
+        fGetMaterialPrice(a.material,5,pYear) as 'May',
+        fGetMaterialPrice(a.material,6,pYear) as 'Jun',
+        fGetMaterialPrice(a.material,7,pYear) as 'Jul', 
+        fGetMaterialPrice(a.material,8,pYear) as 'Aug',
+        fGetMaterialPrice(a.material,9,pYear) as 'Sep',
+        fGetMaterialPrice(a.material,10,pYear) as 'Oct',
+        fGetMaterialPrice(a.material,11,pYear) as 'Nov',
+        fGetMaterialPrice(a.material,12,pYear) as 'Dec'
+        from v_material_price_history as a inner join t_supplier as b on a.vendor = b.supplier_id INNER JOIN t_material as c on a.material = c.material WHERE a.year = pYear and a.material = pMaterial order by a.material;
+    END IF;
+	
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_InventoryStock` (IN `pMaterial` VARCHAR(70), IN `pQuantity` DECIMAL(15,3), IN `pMvt` VARCHAR(10), IN `pUnit` VARCHAR(10), IN `pWhs` VARCHAR(11))  NO SQL
@@ -129,7 +164,7 @@ BEGIN
         end if;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestSlipStatus` (IN `pReqnum` VARCHAR(15), IN `pReqitem` INT)  BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestSlipStatus` (IN `pReqnum` VARCHAR(15), IN `pReqitem` INT, IN `pMaterial` VARCHAR(70), IN `pPrice` DECIMAL(15,2))  BEGIN
 	DECLARE prQty decimal(15,3);
     DECLARE poQty decimal(15,3);
     SELECT quantity into prQty from t_request_slip02 where requestnum = pReqnum and request_item = pReqitem;
@@ -138,6 +173,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestSlipStatus` (IN `pR
    IF poQty >= prQty then  
 		UPDATE t_request_slip02 set po_created = 'Y' WHERE requestnum = pReqnum AND request_item = pReqitem;
     END IF;  
+    
+    UPDATE t_material set stdprice = pPrice WHERE material = pMaterial;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateStock` (IN `pMaterial` VARCHAR(70), IN `pDept` INT, IN `pQuantity` DECIMAL(15,3), IN `pMvt` VARCHAR(5), IN `pUnit` VARCHAR(5))  BEGIN
@@ -174,6 +211,17 @@ CREATE DEFINER=`root`@`localhost` FUNCTION `fGetDepatment` (`pId` INT) RETURNS V
     SET hasil = (SELECT department from t_department where id = pId);
     	-- return the customer level
 	RETURN (hasil);
+END$$
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `fGetMaterialPrice` (`pMaterial` VARCHAR(70), `pMonth` INT, `pYear` INT) RETURNS DECIMAL(15,2) BEGIN
+    DECLARE hasil decimal(15,2);
+    DECLARE totalPO int;
+    
+    SET totalPO = (SELECT count(*) from t_po01 as a INNER JOIN t_po02 as b on a.ponum = b.ponum where month(a.podat) = pMonth and year(a.podat) = pYear and b.material = pMaterial and a.is_rejected = 'N');
+	
+    SET hasil = (SELECT total_unitprice from v_material_price_history where month = pMonth and year = pYear and material = pMaterial);
+    	-- return the customer level
+	RETURN (hasil/totalPO);
 END$$
 
 CREATE DEFINER=`root`@`localhost` FUNCTION `fGetUserDepartment` (`puserName` VARCHAR(50)) RETURNS VARCHAR(50) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci NO SQL
@@ -415,7 +463,7 @@ CREATE TABLE `t_currency` (
   `currency` varchar(5) COLLATE utf8mb4_unicode_ci NOT NULL,
   `contrykey` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `decimalplace` int(11) NOT NULL DEFAULT '0',
+  `decimalplace` int(11) NOT NULL DEFAULT 0,
   `createdby` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Currency List';
 
@@ -699,9 +747,9 @@ CREATE TABLE `t_material` (
 --
 
 INSERT INTO `t_material` (`material`, `brand`, `matdesc`, `supplier`, `mattype`, `matgroup`, `color`, `size`, `matunit`, `minstock`, `orderunit`, `stdprice`, `image`, `active`, `createdon`, `createdby`) VALUES
-('PART005', 'HONDA', 'Test Part Image', 'Test', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '25.00', 'PART005-kitchen.jpeg', NULL, '2021-11-04 05:11:46', 'sys-admin'),
-('PART006', 'YAMAHA', 'Test Part With Image', 'YAMAHA', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '75.00', 'PART006-lemari.jpg', NULL, '2021-11-04 11:11:59', 'sys-admin'),
-('PART01', 'YAMAHA', 'Part01 Testing', 'YAMAHADO', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '4000.95', 'PART01-ic_home.png', NULL, '2021-08-15 11:08:12', 'sys-admin'),
+('PART005', 'HONDA', 'Test Part Image', 'Test', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '455.00', 'PART005-kitchen.jpeg', NULL, '2021-11-04 05:11:46', 'sys-admin'),
+('PART006', 'YAMAHA', 'Test Part With Image', 'YAMAHA', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '556.00', 'PART006-lemari.jpg', NULL, '2021-11-04 11:11:59', 'sys-admin'),
+('PART01', 'YAMAHA', 'Part01 Testing', 'YAMAHADO', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '556.00', 'PART01-ic_home.png', NULL, '2021-08-15 11:08:12', 'sys-admin'),
 ('PART02', 'YAMAHA', 'Part02 Testing', 'YAMAHADO', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '9999.50', 'PART02-user.ico', NULL, '2021-08-15 11:08:20', 'sys-admin'),
 ('PART03', 'HONDA', 'Test Part With Image', 'HONDA', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '100.00', 'PART03-home.PNG', NULL, '2021-11-04 05:11:11', 'sys-admin'),
 ('PART04', 'Honda', 'Testing', 'Test', NULL, NULL, NULL, NULL, 'PC', NULL, NULL, '29000.00', 'PART04-', NULL, '2022-01-04 01:01:34', 'sys-admin'),
@@ -758,7 +806,7 @@ CREATE TABLE `t_menugroups` (
   `menugroup` int(11) NOT NULL,
   `description` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `icon` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `createdon` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createdon` timestamp NOT NULL DEFAULT current_timestamp(),
   `createdby` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -838,7 +886,8 @@ INSERT INTO `t_menus` (`id`, `menu`, `route`, `type`, `icon`, `menugroup`, `grou
 (42, 'Report Purchase Order', 'reportpo', 'parent', '', 3, NULL, 6, '2022-01-04 00:00:00', 'sys-admin'),
 (43, 'Report Receipt Purchase Order', 'reportgrpo', 'parent', '', 3, NULL, 7, '2022-01-04 00:00:00', 'sys-admin'),
 (44, 'Material Price Order History', 'materialprice', 'parent', '', 3, NULL, 8, '2022-01-04 00:00:00', 'sys-admin'),
-(45, 'Report Request Slip', 'reportslip', 'parent', '', 3, NULL, NULL, '2022-01-12 00:00:00', 'sys-admin');
+(45, 'Report Request Slip', 'reportslip', 'parent', '', 3, NULL, NULL, '2022-01-12 00:00:00', 'sys-admin'),
+(46, 'Open Purchase Order', 'reportpo/openpo', 'parent', '', 3, NULL, NULL, '2022-01-20 00:00:00', 'sys-admin');
 
 -- --------------------------------------------------------
 
@@ -969,13 +1018,13 @@ CREATE TABLE `t_po01` (
   `potype` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `podat` date DEFAULT NULL,
   `vendor` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `note` text COLLATE utf8mb4_unicode_ci,
+  `note` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `currency` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `approvestat` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `appby` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `final_approve` varchar(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'N',
   `is_rejected` varchar(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'N',
-  `reject_note` text COLLATE utf8mb4_unicode_ci,
+  `reject_note` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `completed` varchar(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `warehouse` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `createdon` datetime DEFAULT NULL,
@@ -1002,7 +1051,9 @@ INSERT INTO `t_po01` (`ponum`, `ext_ponum`, `potype`, `podat`, `vendor`, `note`,
 ('900006', '900006', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-05 10:01:00', 'sys-admin'),
 ('900007', '900007', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-05 10:01:42', 'sys-admin'),
 ('900008', '900008', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-05 10:01:48', 'sys-admin'),
-('900009', '900009', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-05 10:01:40', 'sys-admin');
+('900009', '900009', NULL, '2022-01-05', '2000000000', 'Tes PO', 'PHP', '2', NULL, 'Y', 'N', NULL, NULL, NULL, '2022-01-05 10:01:40', 'sys-admin'),
+('923456', '923456', NULL, '2022-01-20', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, NULL, '2022-01-20 02:01:07', 'sys-admin'),
+('993456', '993456', NULL, '2022-01-20', '2000000000', 'Tes PO', 'PHP', '1', NULL, 'N', 'N', NULL, NULL, NULL, '2022-01-20 02:01:00', 'sys-admin');
 
 --
 -- Triggers `t_po01`
@@ -1078,7 +1129,12 @@ INSERT INTO `t_po02` (`ponum`, `poitem`, `material`, `matdesc`, `quantity`, `uni
 ('900008', 1, 'PART005', 'Test Part Image', '100.000', 'PC', '550.00', NULL, NULL, '0.000', '3000000011', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
 ('900008', 2, 'PART006', 'Test Part With Image', '200.000', 'PC', '8.77', NULL, NULL, '0.000', '3000000011', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
 ('900009', 1, 'PART005', 'Test Part Image', '3.000', 'PC', '5000.00', NULL, NULL, '0.000', '3000000012', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
-('900009', 2, 'PART006', 'Test Part With Image', '3.000', 'PC', '6500.00', NULL, NULL, '0.000', '3000000012', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin');
+('900009', 2, 'PART006', 'Test Part With Image', '3.000', 'PC', '6500.00', NULL, NULL, '0.000', '3000000012', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-05', 'sys-admin'),
+('923456', 1, 'PART005', 'Test Part Image', '60.000', 'PC', '69.00', NULL, NULL, '0.000', '3000000016', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-20', 'sys-admin'),
+('923456', 2, 'PART006', 'Test Part With Image', '600.000', 'PC', '876.00', NULL, NULL, '0.000', '3000000016', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-20', 'sys-admin'),
+('923456', 3, 'PART01', 'Part01 Testing', '560.000', 'PC', '556.00', NULL, NULL, '0.000', '3000000016', 3, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-20', 'sys-admin'),
+('993456', 1, 'PART005', 'Test Part Image', '100.000', 'PC', '455.00', NULL, NULL, '0.000', '3000000017', 1, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-20', 'sys-admin'),
+('993456', 2, 'PART006', 'Test Part With Image', '200.000', 'PC', '556.00', NULL, NULL, '0.000', '3000000017', 2, NULL, 'N', NULL, '1', NULL, NULL, NULL, '2022-01-20', 'sys-admin');
 
 --
 -- Triggers `t_po02`
@@ -1088,7 +1144,7 @@ CREATE TRIGGER `tg_UpdateRequestSlipPOStatus` AFTER DELETE ON `t_po02` FOR EACH 
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `tg_UpdateRequestSlipStatus` AFTER INSERT ON `t_po02` FOR EACH ROW CALL sp_UpdateRequestSlipStatus(NEW.requestnum, NEW.request_item)
+CREATE TRIGGER `tg_UpdateRequestSlipPOStatusAndMaterialPrice` AFTER INSERT ON `t_po02` FOR EACH ROW CALL sp_UpdateRequestSlipStatus(NEW.requestnum, NEW.request_item, NEW.material, NEW.price)
 $$
 DELIMITER ;
 
@@ -1121,7 +1177,9 @@ INSERT INTO `t_po03` (`id`, `ponum`, `efile`) VALUES
 (12, '899999', '899999-'),
 (13, '899998', '899998-'),
 (14, '700000', '700000-Link Char SO.txt'),
-(15, '700000', '700000-link restfull api node js.txt');
+(15, '700000', '700000-link restfull api node js.txt'),
+(16, '923456', '923456-'),
+(17, '993456', '993456-');
 
 -- --------------------------------------------------------
 
@@ -1171,7 +1229,7 @@ INSERT INTO `t_po05` (`ponum`, `approve_level`, `approve_date`, `approve_by`) VA
 CREATE TABLE `t_pr01` (
   `prnum` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL,
   `prtype` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `note` text COLLATE utf8mb4_unicode_ci,
+  `note` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `prdate` date DEFAULT NULL,
   `relgroup` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `approvestat` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -1357,12 +1415,12 @@ CREATE TABLE `t_request_slip01` (
   `request_date` date NOT NULL,
   `request_by` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `request_note` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `request_status` int(11) NOT NULL DEFAULT '1',
+  `request_status` int(11) NOT NULL DEFAULT 1,
   `final_approve` varchar(1) COLLATE utf8mb4_unicode_ci DEFAULT 'N',
   `is_rejected` varchar(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'N',
   `reject_note` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `deptid` int(11) NOT NULL,
-  `efile` text COLLATE utf8mb4_unicode_ci,
+  `efile` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `createdon` date NOT NULL,
   `createdby` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1405,7 +1463,7 @@ CREATE TABLE `t_request_slip02` (
   `quantity` decimal(15,3) NOT NULL,
   `unit` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
   `unit_price` decimal(15,2) NOT NULL,
-  `approvestat` int(11) NOT NULL DEFAULT '1',
+  `approvestat` int(11) NOT NULL DEFAULT 1,
   `po_created` varchar(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'N',
   `createdon` date NOT NULL,
   `createdby` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
@@ -1452,11 +1510,11 @@ INSERT INTO `t_request_slip02` (`requestnum`, `request_item`, `material`, `quant
 ('3000000015', 1, 'PART006', '50.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
 ('3000000015', 2, 'PART01', '100.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
 ('3000000015', 3, 'PART02', '150.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
-('3000000016', 1, 'PART005', '60.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
-('3000000016', 2, 'PART006', '600.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
-('3000000016', 3, 'PART01', '560.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
-('3000000017', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
-('3000000017', 2, 'PART006', '200.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
+('3000000016', 1, 'PART005', '60.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
+('3000000016', 2, 'PART006', '600.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
+('3000000016', 3, 'PART01', '560.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
+('3000000017', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
+('3000000017', 2, 'PART006', '200.000', 'PC', '0.00', 1, 'Y', '2022-01-05', 'sys-admin'),
 ('3000000018', 1, 'PART006', '4.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
 ('3000000018', 2, 'PART005', '3.000', 'PC', '0.00', 1, 'N', '2022-01-05', 'sys-admin'),
 ('3000000019', 1, 'PART005', '100.000', 'PC', '0.00', 1, 'Y', '2022-01-16', 'sys-admin'),
@@ -1588,6 +1646,7 @@ INSERT INTO `t_rolemenu` (`roleid`, `menuid`, `createdon`, `createdby`) VALUES
 (1, 43, '2022-01-04 00:00:00', 'sys-admin'),
 (1, 44, '2022-01-04 00:00:00', 'sys-admin'),
 (1, 45, '2022-01-12 00:00:00', 'sys-admin'),
+(1, 46, '2022-01-20 00:00:00', 'sys-admin'),
 (2, 18, '2021-08-17 00:00:00', 'sys-admin'),
 (2, 23, '2021-08-17 00:00:00', 'sys-admin'),
 (2, 39, '2021-12-22 00:00:00', 'sys-admin'),
@@ -1736,6 +1795,10 @@ INSERT INTO `t_role_avtivity` (`roleid`, `menuid`, `activity`, `status`, `create
 (1, 45, 'Delete', 0, '2022-01-12'),
 (1, 45, 'Read', 1, '2022-01-12'),
 (1, 45, 'Update', 0, '2022-01-12'),
+(1, 46, 'Create', 0, '2022-01-20'),
+(1, 46, 'Delete', 0, '2022-01-20'),
+(1, 46, 'Read', 1, '2022-01-20'),
+(1, 46, 'Update', 0, '2022-01-20'),
 (2, 18, 'Create', 1, '2021-08-17'),
 (2, 18, 'Delete', 1, '2021-08-17'),
 (2, 18, 'Read', 1, '2021-08-17'),
@@ -1912,6 +1975,32 @@ CREATE TABLE `t_whs_prtype` (
 INSERT INTO `t_whs_prtype` (`prtype`, `warehouseid`) VALUES
 ('PR01', 'WH01'),
 ('PR02', 'WH02');
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `v_grpo01`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_grpo01` (
+`ponum` varchar(25)
+,`poitem` int(11)
+,`podat` date
+,`vendor` varchar(10)
+,`supplier_name` varchar(100)
+,`note` text
+,`material` varchar(70)
+,`matdesc` varchar(100)
+,`quantity` decimal(15,3)
+,`grqty` decimal(15,3)
+,`unit` varchar(10)
+,`price` decimal(15,2)
+,`gramount` decimal(30,5)
+,`movement_number` varchar(10)
+,`movement_year` int(11)
+,`movement_item` int(11)
+,`movement_date` date
+);
 
 -- --------------------------------------------------------
 
@@ -2158,11 +2247,20 @@ CREATE TABLE `v_user_role_avtivity` (
 -- --------------------------------------------------------
 
 --
+-- Structure for view `v_grpo01`
+--
+DROP TABLE IF EXISTS `v_grpo01`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_grpo01`  AS  select `a`.`ponum` AS `ponum`,`b`.`poitem` AS `poitem`,`a`.`podat` AS `podat`,`a`.`vendor` AS `vendor`,`f`.`supplier_name` AS `supplier_name`,`a`.`note` AS `note`,`b`.`material` AS `material`,`b`.`matdesc` AS `matdesc`,`b`.`quantity` AS `quantity`,`c`.`quantity` AS `grqty`,`b`.`unit` AS `unit`,`b`.`price` AS `price`,`c`.`quantity` * `b`.`price` AS `gramount`,`c`.`movement_number` AS `movement_number`,`c`.`movement_year` AS `movement_year`,`c`.`movement_item` AS `movement_item`,`d`.`movement_date` AS `movement_date` from ((((`t_po01` `a` join `t_po02` `b` on(`a`.`ponum` = `b`.`ponum`)) join `t_movement_02` `c` on(`b`.`ponum` = `c`.`ponum` and `b`.`poitem` = `c`.`poitem`)) join `t_movement_01` `d` on(`c`.`movement_number` = `d`.`movement_number` and `c`.`movement_year` = `d`.`movement_year`)) join `t_supplier` `f` on(`a`.`vendor` = `f`.`supplier_id`)) order by `a`.`vendor`,`a`.`ponum`,`b`.`poitem` ;
+
+-- --------------------------------------------------------
+
+--
 -- Structure for view `v_material_price_history`
 --
 DROP TABLE IF EXISTS `v_material_price_history`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_material_price_history`  AS  select `v_po01`.`month` AS `month`,`v_po01`.`year` AS `year`,`v_po01`.`vendor` AS `vendor`,`v_po01`.`material` AS `material`,sum(`v_po01`.`quantity`) AS `totalqty`,`v_po01`.`unit` AS `unit`,sum(`v_po01`.`price`) AS `total_unitprice`,cast((sum(`v_po01`.`quantity`) * sum(`v_po01`.`quantity`)) as decimal(15,2)) AS `totalprice`,cast((sum(`v_po01`.`totalprice`) / sum(`v_po01`.`quantity`)) as decimal(15,2)) AS `avg_price` from `v_po01` group by `v_po01`.`month`,`v_po01`.`year`,`v_po01`.`vendor`,`v_po01`.`material`,`v_po01`.`unit` order by `v_po01`.`month`,`v_po01`.`year`,`v_po01`.`vendor`,`v_po01`.`material` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_material_price_history`  AS  select `v_po01`.`month` AS `month`,`v_po01`.`year` AS `year`,`v_po01`.`vendor` AS `vendor`,`v_po01`.`material` AS `material`,sum(`v_po01`.`quantity`) AS `totalqty`,`v_po01`.`unit` AS `unit`,sum(`v_po01`.`price`) AS `total_unitprice`,cast(sum(`v_po01`.`quantity`) * sum(`v_po01`.`quantity`) as decimal(15,2)) AS `totalprice`,cast(sum(`v_po01`.`totalprice`) / sum(`v_po01`.`quantity`) as decimal(15,2)) AS `avg_price` from `v_po01` group by `v_po01`.`month`,`v_po01`.`year`,`v_po01`.`vendor`,`v_po01`.`material`,`v_po01`.`unit` order by `v_po01`.`month`,`v_po01`.`year`,`v_po01`.`vendor`,`v_po01`.`material` ;
 
 -- --------------------------------------------------------
 
@@ -2171,7 +2269,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_po01`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_po01`  AS  select `a`.`podat` AS `podat`,month(`a`.`podat`) AS `month`,year(`a`.`podat`) AS `year`,`a`.`vendor` AS `vendor`,`b`.`material` AS `material`,`b`.`matdesc` AS `matdesc`,`b`.`quantity` AS `quantity`,`b`.`unit` AS `unit`,`b`.`price` AS `price`,(`b`.`quantity` * `b`.`price`) AS `totalprice` from (`t_po01` `a` join `t_po02` `b` on((`a`.`ponum` = `b`.`ponum`))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_po01`  AS  select `a`.`podat` AS `podat`,month(`a`.`podat`) AS `month`,year(`a`.`podat`) AS `year`,`a`.`vendor` AS `vendor`,`b`.`material` AS `material`,`b`.`matdesc` AS `matdesc`,`b`.`quantity` AS `quantity`,`b`.`unit` AS `unit`,`b`.`price` AS `price`,`b`.`quantity` * `b`.`price` AS `totalprice` from (`t_po01` `a` join `t_po02` `b` on(`a`.`ponum` = `b`.`ponum`)) ;
 
 -- --------------------------------------------------------
 
@@ -2180,7 +2278,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_po02`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_po02`  AS  select `a`.`ponum` AS `ponum`,`a`.`podat` AS `podat`,month(`a`.`podat`) AS `month`,year(`a`.`podat`) AS `year`,`a`.`vendor` AS `vendor`,`b`.`material` AS `material`,`b`.`matdesc` AS `matdesc`,`b`.`quantity` AS `quantity`,`b`.`grqty` AS `grqty`,(`b`.`quantity` - `b`.`grqty`) AS `openqty`,`b`.`unit` AS `unit`,`b`.`price` AS `price`,(`b`.`quantity` * `b`.`price`) AS `totalprice` from (`t_po01` `a` join `t_po02` `b` on((`a`.`ponum` = `b`.`ponum`))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_po02`  AS  select `a`.`ponum` AS `ponum`,`a`.`podat` AS `podat`,month(`a`.`podat`) AS `month`,year(`a`.`podat`) AS `year`,`a`.`vendor` AS `vendor`,`b`.`material` AS `material`,`b`.`matdesc` AS `matdesc`,`b`.`quantity` AS `quantity`,`b`.`grqty` AS `grqty`,`b`.`quantity` - `b`.`grqty` AS `openqty`,`b`.`unit` AS `unit`,`b`.`price` AS `price`,`b`.`quantity` * `b`.`price` AS `totalprice` from (`t_po01` `a` join `t_po02` `b` on(`a`.`ponum` = `b`.`ponum`)) ;
 
 -- --------------------------------------------------------
 
@@ -2189,7 +2287,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_pr004`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_pr004`  AS  select `a`.`prnum` AS `prnum`,`a`.`pritem` AS `pritem`,`a`.`material` AS `material`,`a`.`matdesc` AS `matdesc`,`a`.`quantity` AS `quantity`,`a`.`unit` AS `unit`,`a`.`price` AS `price`,`a`.`pocreated` AS `pocreated`,`a`.`approvestat` AS `approvestat`,`a`.`approveby` AS `approveby`,`a`.`remark` AS `remark`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby`,`a`.`final_approve` AS `final_approve` from (`t_pr02` `a` left join `t_material` `b` on((`a`.`material` = `b`.`material`))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_pr004`  AS  select `a`.`prnum` AS `prnum`,`a`.`pritem` AS `pritem`,`a`.`material` AS `material`,`a`.`matdesc` AS `matdesc`,`a`.`quantity` AS `quantity`,`a`.`unit` AS `unit`,`a`.`price` AS `price`,`a`.`pocreated` AS `pocreated`,`a`.`approvestat` AS `approvestat`,`a`.`approveby` AS `approveby`,`a`.`remark` AS `remark`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby`,`a`.`final_approve` AS `final_approve` from (`t_pr02` `a` left join `t_material` `b` on(`a`.`material` = `b`.`material`)) ;
 
 -- --------------------------------------------------------
 
@@ -2198,7 +2296,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_pr04`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_pr04`  AS  select `a`.`prnum` AS `prnum`,`a`.`pritem` AS `pritem`,`a`.`material` AS `material`,`a`.`matdesc` AS `matdesc`,`a`.`quantity` AS `quantity`,`a`.`unit` AS `unit`,`a`.`price` AS `price`,`a`.`pocreated` AS `pocreated`,`a`.`approvestat` AS `approvestat`,`a`.`approveby` AS `approveby`,`a`.`remark` AS `remark`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby` from (`t_pr02` `a` left join `t_material` `b` on((`a`.`material` = `b`.`material`))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_pr04`  AS  select `a`.`prnum` AS `prnum`,`a`.`pritem` AS `pritem`,`a`.`material` AS `material`,`a`.`matdesc` AS `matdesc`,`a`.`quantity` AS `quantity`,`a`.`unit` AS `unit`,`a`.`price` AS `price`,`a`.`pocreated` AS `pocreated`,`a`.`approvestat` AS `approvestat`,`a`.`approveby` AS `approveby`,`a`.`remark` AS `remark`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby` from (`t_pr02` `a` left join `t_material` `b` on(`a`.`material` = `b`.`material`)) ;
 
 -- --------------------------------------------------------
 
@@ -2207,7 +2305,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_report_grpo`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_report_grpo`  AS  select `a`.`movement_number` AS `movement_number`,`a`.`movement_year` AS `movement_year`,`b`.`movement_item` AS `movement_item`,`a`.`movement_date` AS `movement_date`,`a`.`movement_type` AS `movement_type`,`a`.`movement_note` AS `movement_note`,`b`.`material` AS `material`,`b`.`matdesc` AS `matdesc`,`b`.`quantity` AS `quantity`,`b`.`unit` AS `unit`,`f`.`price` AS `unit_price`,cast((`b`.`quantity` * `f`.`price`) as decimal(15,2)) AS `totalprice`,`b`.`ponum` AS `ponum`,`b`.`poitem` AS `poitem`,`c`.`vendor` AS `vendor`,`d`.`supplier_name` AS `supplier_name` from ((((`t_movement_01` `a` join `t_movement_02` `b` on(((`a`.`movement_number` = `b`.`movement_number`) and (`a`.`movement_year` = `b`.`movement_year`)))) join `t_po01` `c` on((`c`.`ponum` = `b`.`ponum`))) join `t_supplier` `d` on((`c`.`vendor` = `d`.`supplier_id`))) join `t_po02` `f` on(((`b`.`ponum` = `f`.`ponum`) and (`b`.`poitem` = `f`.`poitem`)))) where (`a`.`movement_type` = '101') order by `a`.`movement_number`,`a`.`movement_year`,`b`.`movement_item` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_report_grpo`  AS  select `a`.`movement_number` AS `movement_number`,`a`.`movement_year` AS `movement_year`,`b`.`movement_item` AS `movement_item`,`a`.`movement_date` AS `movement_date`,`a`.`movement_type` AS `movement_type`,`a`.`movement_note` AS `movement_note`,`b`.`material` AS `material`,`b`.`matdesc` AS `matdesc`,`b`.`quantity` AS `quantity`,`b`.`unit` AS `unit`,`f`.`price` AS `unit_price`,cast(`b`.`quantity` * `f`.`price` as decimal(15,2)) AS `totalprice`,`b`.`ponum` AS `ponum`,`b`.`poitem` AS `poitem`,`c`.`vendor` AS `vendor`,`d`.`supplier_name` AS `supplier_name` from ((((`t_movement_01` `a` join `t_movement_02` `b` on(`a`.`movement_number` = `b`.`movement_number` and `a`.`movement_year` = `b`.`movement_year`)) join `t_po01` `c` on(`c`.`ponum` = `b`.`ponum`)) join `t_supplier` `d` on(`c`.`vendor` = `d`.`supplier_id`)) join `t_po02` `f` on(`b`.`ponum` = `f`.`ponum` and `b`.`poitem` = `f`.`poitem`)) where `a`.`movement_type` = '101' order by `a`.`movement_number`,`a`.`movement_year`,`b`.`movement_item` ;
 
 -- --------------------------------------------------------
 
@@ -2216,7 +2314,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_report_transaction`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_report_transaction`  AS  select `a`.`transactionid` AS `transactionid`,`a`.`prod_date` AS `prod_date`,`a`.`partnumber` AS `partnumber`,`a`.`partmodel` AS `partmodel`,`a`.`serial_no` AS `serial_no`,`a`.`createdon` AS `createdon`,`b`.`process1` AS `process1`,`b`.`process2` AS `process2`,`b`.`process3` AS `process3`,`b`.`process4` AS `process4`,`b`.`process5` AS `process5`,`b`.`process6` AS `process6`,`b`.`process7` AS `process7`,`b`.`process8` AS `process8`,`b`.`process9` AS `process9`,`b`.`lastprocess` AS `lastprocess`,`b`.`error_process` AS `error_process`,`b`.`defect_name` AS `defect_name`,`b`.`location` AS `location`,`b`.`cause` AS `cause`,`b`.`action` AS `action`,`c`.`process1` AS `repair1`,`c`.`process2` AS `repair2`,`c`.`process3` AS `repair3`,`c`.`process4` AS `repair4`,`c`.`process5` AS `repair5`,`c`.`process6` AS `repair6`,`c`.`remark` AS `remark`,`c`.`defect_name` AS `repair_defect`,`c`.`location` AS `repair_location`,`c`.`action` AS `repair_action`,`c`.`lastrepair` AS `lastrepair` from ((`t_ipd_forms` `a` left join `t_ipd_process` `b` on((`a`.`transactionid` = `b`.`transactionid`))) left join `t_ipd_repair` `c` on((`a`.`transactionid` = `c`.`transactionid`))) order by `a`.`transactionid`,`a`.`serial_no`,`a`.`partnumber` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_report_transaction`  AS  select `a`.`transactionid` AS `transactionid`,`a`.`prod_date` AS `prod_date`,`a`.`partnumber` AS `partnumber`,`a`.`partmodel` AS `partmodel`,`a`.`serial_no` AS `serial_no`,`a`.`createdon` AS `createdon`,`b`.`process1` AS `process1`,`b`.`process2` AS `process2`,`b`.`process3` AS `process3`,`b`.`process4` AS `process4`,`b`.`process5` AS `process5`,`b`.`process6` AS `process6`,`b`.`process7` AS `process7`,`b`.`process8` AS `process8`,`b`.`process9` AS `process9`,`b`.`lastprocess` AS `lastprocess`,`b`.`error_process` AS `error_process`,`b`.`defect_name` AS `defect_name`,`b`.`location` AS `location`,`b`.`cause` AS `cause`,`b`.`action` AS `action`,`c`.`process1` AS `repair1`,`c`.`process2` AS `repair2`,`c`.`process3` AS `repair3`,`c`.`process4` AS `repair4`,`c`.`process5` AS `repair5`,`c`.`process6` AS `repair6`,`c`.`remark` AS `remark`,`c`.`defect_name` AS `repair_defect`,`c`.`location` AS `repair_location`,`c`.`action` AS `repair_action`,`c`.`lastrepair` AS `lastrepair` from ((`t_ipd_forms` `a` left join `t_ipd_process` `b` on(`a`.`transactionid` = `b`.`transactionid`)) left join `t_ipd_repair` `c` on(`a`.`transactionid` = `c`.`transactionid`)) order by `a`.`transactionid`,`a`.`serial_no`,`a`.`partnumber` ;
 
 -- --------------------------------------------------------
 
@@ -2225,7 +2323,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_user`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_user`  AS  select `a`.`username` AS `username`,`a`.`password` AS `password`,`a`.`nama` AS `nama`,`a`.`department` AS `department`,`a`.`createdby` AS `createdby`,`a`.`createdon` AS `createdon`,`b`.`department` AS `deptname` from (`t_user` `a` left join `t_department` `b` on((`a`.`department` = `b`.`id`))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_user`  AS  select `a`.`username` AS `username`,`a`.`password` AS `password`,`a`.`nama` AS `nama`,`a`.`department` AS `department`,`a`.`createdby` AS `createdby`,`a`.`createdon` AS `createdon`,`b`.`department` AS `deptname` from (`t_user` `a` left join `t_department` `b` on(`a`.`department` = `b`.`id`)) ;
 
 -- --------------------------------------------------------
 
@@ -2234,7 +2332,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_user_menu`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_user_menu`  AS  select `a`.`username` AS `username`,`b`.`roleid` AS `roleid`,`f`.`rolename` AS `rolename`,`c`.`menuid` AS `menuid`,`d`.`id` AS `id`,`d`.`menu` AS `menu`,`d`.`route` AS `route`,`d`.`type` AS `type`,`d`.`menugroup` AS `menugroup`,`d`.`grouping` AS `grouping`,`d`.`icon` AS `icon`,`d`.`createdon` AS `createdon`,`d`.`createdby` AS `createdby`,`d`.`_sorting` AS `_sorting` from ((((`t_user` `a` join `t_user_role` `b` on((`a`.`username` = `b`.`username`))) join `t_rolemenu` `c` on((`c`.`roleid` = `b`.`roleid`))) join `t_menus` `d` on((`d`.`id` = `c`.`menuid`))) join `t_role` `f` on((`f`.`roleid` = `b`.`roleid`))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_user_menu`  AS  select `a`.`username` AS `username`,`b`.`roleid` AS `roleid`,`f`.`rolename` AS `rolename`,`c`.`menuid` AS `menuid`,`d`.`id` AS `id`,`d`.`menu` AS `menu`,`d`.`route` AS `route`,`d`.`type` AS `type`,`d`.`menugroup` AS `menugroup`,`d`.`grouping` AS `grouping`,`d`.`icon` AS `icon`,`d`.`createdon` AS `createdon`,`d`.`createdby` AS `createdby`,`d`.`_sorting` AS `_sorting` from ((((`t_user` `a` join `t_user_role` `b` on(`a`.`username` = `b`.`username`)) join `t_rolemenu` `c` on(`c`.`roleid` = `b`.`roleid`)) join `t_menus` `d` on(`d`.`id` = `c`.`menuid`)) join `t_role` `f` on(`f`.`roleid` = `b`.`roleid`)) ;
 
 -- --------------------------------------------------------
 
@@ -2243,7 +2341,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_user_menugroup`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_user_menugroup`  AS  select `a`.`menugroup` AS `menugroup`,`a`.`description` AS `description`,`a`.`icon` AS `icon`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby`,`b`.`username` AS `username` from (`t_menugroups` `a` join `v_user_menu` `b` on((`a`.`menugroup` = `b`.`menugroup`))) order by `a`.`menugroup` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_user_menugroup`  AS  select `a`.`menugroup` AS `menugroup`,`a`.`description` AS `description`,`a`.`icon` AS `icon`,`a`.`createdon` AS `createdon`,`a`.`createdby` AS `createdby`,`b`.`username` AS `username` from (`t_menugroups` `a` join `v_user_menu` `b` on(`a`.`menugroup` = `b`.`menugroup`)) order by `a`.`menugroup` ;
 
 -- --------------------------------------------------------
 
@@ -2252,7 +2350,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_user_role_avtivity`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_user_role_avtivity`  AS  select `a`.`roleid` AS `roleid`,`a`.`menuid` AS `menuid`,`a`.`activity` AS `activity`,`a`.`status` AS `status`,`a`.`createdon` AS `createdon`,`b`.`route` AS `route`,`b`.`menu` AS `menu`,`c`.`username` AS `username`,`d`.`rolename` AS `rolename` from (((`t_role_avtivity` `a` join `t_menus` `b` on((`a`.`menuid` = `b`.`id`))) join `t_user_role` `c` on((`a`.`roleid` = `c`.`roleid`))) join `t_role` `d` on((`a`.`roleid` = `d`.`roleid`))) order by `c`.`username`,`d`.`rolename` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_user_role_avtivity`  AS  select `a`.`roleid` AS `roleid`,`a`.`menuid` AS `menuid`,`a`.`activity` AS `activity`,`a`.`status` AS `status`,`a`.`createdon` AS `createdon`,`b`.`route` AS `route`,`b`.`menu` AS `menu`,`c`.`username` AS `username`,`d`.`rolename` AS `rolename` from (((`t_role_avtivity` `a` join `t_menus` `b` on(`a`.`menuid` = `b`.`id`)) join `t_user_role` `c` on(`a`.`roleid` = `c`.`roleid`)) join `t_role` `d` on(`a`.`roleid` = `d`.`roleid`)) order by `c`.`username`,`d`.`rolename` ;
 
 --
 -- Indexes for dumped tables
@@ -2628,13 +2726,13 @@ ALTER TABLE `t_menugroups`
 -- AUTO_INCREMENT for table `t_menus`
 --
 ALTER TABLE `t_menus`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `t_po03`
 --
 ALTER TABLE `t_po03`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `t_process_sequence`
